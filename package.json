@@ -9,7 +9,6 @@
   },
   "dependencies": {
     "chart.js": "^3.7.1",
-    "dotenv": "^16.0.0",
     "next": "latest",
     "react": "17.0.2",
     "react-chartjs-2": "^4.0.1",

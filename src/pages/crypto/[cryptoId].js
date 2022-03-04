@@ -3,45 +3,19 @@ import styles from '../../stylesheet/pages/cryptos.module.css'
 //import { useEffect } from 'react'
 import Chart from '../../components/crypto/chart'
 import useSWR from 'swr'
+import Header from '../../components/elements/header'
+
 
 /*
 
   Possíveis cores pro site:
     azul: #0052ff
     preto
-  
-  
 
 
-  <!-- socket.js
-
-   https://socket.io/docs/v3/emitting-events/
-   https://github.com/socketio/socket.io/discussions/4210 -- salvou o projeto
-
-   https://dev.to/kalpitrathore/various-ways-of-real-time-data-communication-in-node-js-1h2b
-
-   https://socket.io/docs/v3/rooms/
-
-    socket.js -->
-
-*/
-
-
-// <!-- [CRYPTOID]
-
-// https://nextjs.org/learn/seo/introduction-to-seo
+  // https://nextjs.org/learn/seo/introduction-to-seo
  
-
-// store currency and lang pref somewhere
-// https://www.coingecko.com/en/api/documentation
-// use websocket to fetch real time data nodejs -- done (almost real time)
-// integrate websocket somehow??? -- done
-// https://thoughtbot.com/blog/real-time-online-activity-monitor-example-with-node-js-and-websocket
-// https://blog.logrocket.com/implementing-websocket-communication-next-js/
-// https://blog.logrocket.com/websockets-tutorial-how-to-go-real-time-with-node-and-react-8e4693fbf843/
-
-// [CRYPTOID] -->
-
+*/
 
 
 // https://socket.io/docs/v3/emitting-events/
@@ -65,6 +39,10 @@ import useSWR from 'swr'
 
   P/ frontend:
     criar head p/ pesquisa
+    https://stackoverflow.com/questions/30256695/chart-js-drawing-an-arbitrary-vertical-line -- fazer essa linha vertical arbitraria
+    https://webdevpuneet.com/chartjs-vertical-line-on-points-and-custom-tooltip/#gsc.tab=0
+
+  // meter o loko e criar toda a lógica desse código?
 
 
   P/ "longo" prazo (3 meses):
@@ -129,20 +107,20 @@ function Price({ name }) {
   return (
     <div>
       <div>
-        <div className={styles['first-part']}>
+        <div className={'first-part'}>
           <img src={data.image.small} />
           <h1>{data.name}</h1>
         </div>
         <div className={styles['price-container']}>
           <span className={styles.price}>{formatCurrency(data.market_data.current_price[fiatPreference])}</span> 
-          <span className={`${styles['price-change']} ${data.market_data.price_change_percentage_24h < 0 ? styles['price-down'] : styles['price-up']}`}>
-          {data.market_data.price_change_percentage_24h.toFixed(2)}%  ({formatCurrency(data.market_data.price_change_24h_in_currency[fiatPreference])}) 
+          <span className={`${['price-change']} ${data.market_data.price_change_percentage_24h_in_currency[fiatPreference]< 0 ? ['price-down'] : ['price-up']}`}>
+            {data.market_data.price_change_percentage_24h_in_currency[fiatPreference].toFixed(2)}%  ({formatCurrency(data.market_data.price_change_24h_in_currency[fiatPreference])}) 
           </span>
         </div>
       </div>
       <div className={styles['market-cap']}> 
         <span>Market cap: <span id={styles['market-cap-val']}>{formatCurrency(data.market_data.market_cap[fiatPreference])}</span> </span>
-        <span className={`${styles['market-change']} ${data.market_data.market_cap_change_percentage_24h < 0 ? styles['price-down'] : styles['price-up']}`}>
+        <span className={`${styles['market-change']} ${data.market_data.market_cap_change_percentage_24h < 0 ? ['price-down'] : ['price-up']}`}>
           {data.market_data.market_cap_change_percentage_24h.toFixed(2)}%
         </span>
       </div>
@@ -157,14 +135,15 @@ const Crypto = ({ cryptoId }) => {
   //console.log('cryptoId', cryptoId)
 
   return (
-    <div className={styles.crypto}>
+    <div>
+      <Header />
+      <div className={styles.container}> 
         <Price name={cryptoId} />
-      <div className={styles['chart-container']}>
-        <Chart name={cryptoId} vs_currency={fiatPreference}></Chart>
+        <div className={styles['chart-container']}>
+          <Chart name={cryptoId} vs_currency={fiatPreference}></Chart>
+        </div>
       </div>
     </div>
-
-
   )
 
 }

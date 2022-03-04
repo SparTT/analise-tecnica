@@ -1,14 +1,9 @@
 
-.crypto {
+.container {
   height: 100vh;
   max-width: 1300px;
   margin-left: auto;
   margin-right: auto;
-}
-
-.first-part {
-  display: flex;
-  align-items: center;
 }
 
 /*
@@ -17,7 +12,7 @@
   height: 50px;
 }
 */
-.crypto h1 {
+.container h1 {
   font-size: 2.5rem;
   margin-left: 10px;
 }
@@ -31,20 +26,6 @@
 .price {
   font-weight: bold;
   font-size: 2rem;
-}
-
-
-.price-change {
-  font-weight: bold;
-  margin-left: 5px;
-}
-
-.price-down {
-  color: #dc0000;
-}
-
-.price-up {
-  color: #4eaf0a;
 }
 
 .market-cap {
