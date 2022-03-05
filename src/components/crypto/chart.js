@@ -46,9 +46,8 @@ const CryptoChart = ({ name, vs_currency }) => {
     setReactData(res)
    }, [])
 
-  if(reactData === null) return <div>Carregando</div>
+  if(reactData === null) return <div></div>
   if(reactData.error) return <div>Erro ao carregar gráfico</div>
-  if(reactData.errno) return <div>Erro ao carregar gráfico</div>
 
   //console.log(reactData.prices)
   // maybe create a 404 template?

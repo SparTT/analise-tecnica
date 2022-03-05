@@ -27,7 +27,7 @@ function formatDate(date) {
   let min = date.getMinutes()
   let ss = date.getSeconds()
   
-  let yyyy = date.getFullYear();
+  const yyyy = date.getFullYear();
   dd = dd < 10 ? '0' + dd : dd 
   mm = mm < 10 ? '0' + mm : mm 
   
@@ -35,8 +35,8 @@ function formatDate(date) {
   min = min < 10 ? '0' + min : min 
   ss = ss < 10 ? '0' + ss : ss 
 
-  //let res = `${dd}/${mm}/${yyyy} ${hh}:${min}:${ss}`;
-  let res = `${hh}:${min}`;
+  //const res = `${dd}/${mm}/${yyyy} ${hh}:${min}:${ss}`;
+  const res = `${hh}:${min}`;
   return res
 }
 
@@ -75,8 +75,8 @@ function LineChart(data, {
 
 
   // valor minimo pra Ydomain
-  let minPrice = Math.min.apply(null, Y) * 0.995 // reduzir 0.5% do menor valor
-  let maxYDomain = d3.max(Y) * 1.005 // aumentando 0.5% do maior valor
+  const minPrice = Math.min.apply(null, Y) * 0.995 // reduzir 0.5% do menor valor
+  const maxYDomain = d3.max(Y) * 1.005 // aumentando 0.5% do maior valor
   //let maxYDomain = d3.max(Y) * 1.005 // aumentando 0.5% do maior valor
   console.log('minPrice', minPrice)
 
@@ -132,7 +132,7 @@ function LineChart(data, {
 
       
 // tentativa de tooltip
-let tooltipDiv = d3.select("body").append("div")
+const tooltipDiv = d3.select("body").append("div")
 .attr("class", "tooltip")
 .style("opacity", 0);
 svg.selectAll("circle")
@@ -144,20 +144,20 @@ svg.selectAll("circle")
 .style("fill", '#00688B')
   .attr("r", 5)
   .attr("cx", function(obj) {
-    let dataScale = obj[0]
+    const dataScale = obj[0]
     return xScale(dataScale);
   })
   .attr("cy", function(obj) {
-    let dataScale = obj[1]
+    const dataScale = obj[1]
     return yScale(dataScale);
   })
   .on("mouseover", function(event) {
-    let item = event.path[0].__data__
+    const item = event.path[0].__data__
 
     let day = new Date(item[0])
     day = formatDate(day)
     console.log(day)
-    let price = formatCurrency(item[1])
+    const price = formatCurrency(item[1])
 
 
     tooltipDiv.transition()
@@ -213,7 +213,7 @@ getData()
 .then( resp => {
   console.log(resp)
   const prices = resp.prices
-  let chart = LineChart(prices, {
+  const chart = LineChart(prices, {
     x: prices => prices[0], 
     y: prices => prices[1],
     /*height: 800,

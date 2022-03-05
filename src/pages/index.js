@@ -1,17 +1,8 @@
 import Head from 'next/head'
 import Header from '../components/elements/header'
 import useSWR from 'swr'
+import { formatCurrency, fetcher } from '../components/general-scripts/reusable-scripts'
 
-const fetcher = (...args) => fetch(...args).then(res => res.json())
-
-function formatCurrency(number, currency, lang) {
-
-  lang = typeof lang == 'undefined' ? 'pt-BR' : lang
-  currency = typeof currency == 'undefined' ? 'BRL' : currency
-
-  const res = new Intl.NumberFormat(lang, { style: 'currency', currency: currency }).format(number)
-  return res
-}
 
 const fiatPreference = 'brl'
 
@@ -24,7 +15,7 @@ function getData(cryptoId) {
 
 function Main() {
 
-  const cryptoIds = 'bitcoin,ethereum,monero,smooth-love-potion,axie-infinity,binancecoin'
+  const cryptoIds = 'bitcoin,ethereum,monero,smooth-love-potion,axie-infinity,binancecoin,usd-coin,solana,polkadot,dogecoin,litecoin,gala,bomber-coin'
 
   const data = getData(cryptoIds)
 
@@ -39,71 +30,161 @@ function Main() {
     </h1>
 
     <span className="description">
-      As principais cryptos do mercado
+      um textinho de descrição
     </span>
 
-    <div className="grid">
-      {data.map( coin => (
-        <div className="card" key={coin.id}>
-          <div className='first-part'>
-            <img src={`${coin.image.replace('/large/', '/small/')}`}></img>
-            <a href={`/crypto/${coin.id}`} target="_blank" rel="noopener"><h3 className='coin-name'>{coin.name}</h3></a>
+    <div className='coin-table'>
+      <div className='grid-header'>
+        <div className='col-1'>Nome</div>
+        <div className='col-2'>Preço</div>
+        <div className='col-3 text-center'>1h</div>
+        <div className='col-4 text-center'>24h</div>
+        <div className='col-5 text-center'>7d</div>
+        <div className='col-6 text-center'>30d</div>
+        <div className='col-7 text-center'>Market Cap</div>
+      </div>
+      <div className="grid">
+        {data.map( coin => (
+          <div className="card" key={coin.id}>
+            <div className='col-1'>
+              <div className='name-and-icon'>
+                <img src={`${coin.image.replace('/large/', '/small/')}`} draggable='false'></img>
+                <a href={`/crypto/${coin.id}`}><span className='coin-name'>{coin.name}</span></a>
+              </div>
+            </div>
+            <div className='col-2'>
+              <span className='current-price'>
+                {formatCurrency(coin.current_price)} 
+              </span>
+            </div>
+            <div className='col-3 text-center'>
+              <span className={`${['price-change']} ${coin.price_change_percentage_1h_in_currency < 0 ? ['price-down'] : ['price-up']}`}>
+                {coin.price_change_percentage_1h_in_currency}%
+              </span>
+            </div>  
+            <div className='col-4 text-center'>
+              <span className={`${['price-change']} ${coin.price_change_percentage_24h_in_currency < 0 ? ['price-down'] : ['price-up']}`}>
+                {coin.price_change_percentage_24h_in_currency}%
+              </span>
+            </div>  
+            <div className='col-5 text-center'>
+              <span className={`${['price-change']} ${coin.price_change_percentage_7d_in_currency < 0 ? ['price-down'] : ['price-up']}`}>
+                {coin.price_change_percentage_7d_in_currency}%
+              </span>
+            </div>  
+            <div className='col-6 text-center'>
+              <span className={`${['price-change']} ${coin.price_change_percentage_30d_in_currency < 0 ? ['price-down'] : ['price-up']}`}>
+                {coin.price_change_percentage_30d_in_currency}%
+              </span>
+            </div>  
+            <div className='col-7 text-center'>
+              <span>{formatCurrency(coin.market_cap)}</span>
+            </div>  
           </div>
-          <div>
-            <span className='current-price'>
-              {formatCurrency(coin.current_price)} 
-            </span>
-            <span className={`
-              ${['price-change']} ${coin.price_change_percentage_24h < 0 ? ['price-down'] : ['price-up']}
-            `}>
-              {coin.price_change_percentage_24h.toFixed(2)}%
-            </span>
-          </div>
-        </div>
-      ))}
+        ))}
+      </div>
     </div>
+
     <style jsx>{`
       main {
-        padding: 3rem 0;
+        padding: 1rem 0;
         flex: 1;
         display: flex;
         flex-direction: column;
         justify-content: center;
         align-items: center;
-        width: 50%;
+        width: 100%;
+        max-width: 1300px;
       }
+
+      .coin-table {
+        width: 90%;
+        margin-left: auto;
+        margin-right: auto;
+        margin-top: 4rem;
+        box-shadow: 1px 1px 10px 1px #00000014;
+        border-radius: 5px;
+      }
+
       .grid {
         width: 100%;
-        margin-top: 25px;
         display: grid;
         place-items: center;
         grid-row-gap: 10px;
       }
-      .card {
-        box-shadow: 1px 1px 9px 1px #0000002e;
-        padding-top: 5px;
-        padding-right: 15px;
-        padding-left: 15px;
-        width: 80%;
-        border-radius: 5px;
-        padding-bottom: 20px;
+
+
+      .grid-header, .card {
+        display: grid;
+        grid-template-areas:
+            "name price 1h 24h 7d 30d market-cap";
+        width: 100%;
+        align-items: center;
+        grid-template-columns: 20% 15% 10% 10% 10% 10% 25%;
+        padding-top: 2vh;
+        padding-bottom: 2vh;
+        border-bottom: 1px solid lightgray;
       }
+      
+      .grid-header div {
+        font-size: 1.1rem;
+        font-weight: bold;
+      }
+
+      .col-1 {
+        margin-left: 10px;
+        grid-area: name;
+      }
+
+      .col-2 {
+        text-align: right;
+        grid-area: price;
+      }
+
+      
+      .col-3 {
+        grid-area: 1h;
+      }
+
+      .col-4 {
+        grid-area: 24h;
+      }
+
+      .col-5 {
+        grid-area: 7d;
+      }
+
+      .col-6 {
+        grid-area: 30d;
+      }
+
+      .col-7 {
+        grid-area: market-cap;
+      }
+
+      .card {
+        align-items: center;
+      }
+
       a {
         color: black;
         text-decoration: none;
       }
+
+      .name-and-icon img {
+        width: 35px
+      }
+
       .coin-name {
         margin-left: 10px;
-        font-size: 1.3rem;
-      }
-      .first-part img {
-        width: 35px
+        font-weight: bold;
+        font-size: 0.95rem;
       }
 
       .current-price {
         font-weight: bold;
-        font-size: 1.1rem
       }
+
       .title {
         margin: 0;
         line-height: 1.15;
@@ -118,14 +199,47 @@ function Main() {
       .description {
         line-height: 1.5;
         font-size: 1rem;
+        fotn-weight: bold
       }
       
       @media screen and (max-width: 799px) {
-        main {
-          width: 100%;
+
+        .coin-table {
+          box-shadow: unset;
         }
-        card {
-          width: 100%;
+
+        .grid-header {
+          display: none;
+        }
+        
+        .card {
+          grid-template-areas: 
+          "name name"
+          "price 1h";
+          grid-template-columns: min-content max-content;
+          grid-row-gap: 5px;
+          border: none;
+          box-shadow: 1px 1px 10px 1px #00000014;
+        }
+        
+        .coin-name {
+          font-size: 1.1rem;
+        }
+
+        .col-2 {
+          margin-left: 10px;
+        }
+        
+        .col-2, .col-3 {
+          text-align: left;
+        }
+
+        .col-3 .price-change {
+          font-size: 0.8rem;
+        }
+
+        .col-4, .col-5, .col-6, .col-7 {
+          display: none;
         }
       }
 
@@ -150,7 +264,7 @@ export default function Home() {
       <style jsx>{`
         .container {
           min-height: 100vh;
-          padding: 0 0.5rem;
+          padding: 1rem 0;
           display: flex;
           flex-direction: column;
           justify-content: center;

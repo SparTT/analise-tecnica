@@ -4,20 +4,10 @@ import styles from '../../stylesheet/pages/cryptos.module.css'
 import Chart from '../../components/crypto/chart'
 import useSWR from 'swr'
 import Header from '../../components/elements/header'
+import { formatCurrency, fetcher } from '../../components/general-scripts/reusable-scripts'
 
 
-/*
-
-  Possíveis cores pro site:
-    azul: #0052ff
-    preto
-
-
-  // https://nextjs.org/learn/seo/introduction-to-seo
- 
-*/
-
-
+// https://nextjs.org/learn/seo/introduction-to-seo
 // https://socket.io/docs/v3/emitting-events/
 // https://github.com/socketio/socket.io/discussions/4210
 
@@ -32,25 +22,41 @@ import Header from '../../components/elements/header'
 
   Objetivos p/ agr relacionados ao backend: 
     puxar somente as informações que importam da API ?
-    puxar vs_currencies tb -- essa pag ok
+    puxar vs_currencies (moeda que o cara prefere)
     trocar o maximo de let p/ const possivel
     achar uma folder structure boa
-    achar meio p/ renderizar somente os preços novos em [cryptoId] -- ok
+    achar meio p/ renderizar somente os preços novos em [cryptoId], sem alterar o grafico -- ok
+    colocar as funções repetidas em um lugar só
 
   P/ frontend:
     criar head p/ pesquisa
     https://stackoverflow.com/questions/30256695/chart-js-drawing-an-arbitrary-vertical-line -- fazer essa linha vertical arbitraria
     https://webdevpuneet.com/chartjs-vertical-line-on-points-and-custom-tooltip/#gsc.tab=0
+  criar toda a lógica desse código acima p/ os gráficos?
 
-  // meter o loko e criar toda a lógica desse código?
+
+  paginas p/ serem criadas:
+    dashboard -- onde ficará as cryptos escolhidas pelo usuário
+    login
+    cadastro
+    painel de admin? -- talvez
+
+  métodos p/ serem criados:
+    adicionarNoPortifolio -- adicionar alguma crypto + valor que usuário mantem dela
+    alterarPortifolio -- alterar alguma valor que o usuário adicionou de uma crypto
+    removerDoPortifolio -- remover crypto do portifolio
+    criarConta
+    logarUsuario
 
 
-  P/ "longo" prazo (3 meses):
-    montar tooltip em old-chart p/ começar a usar ele
+
+  P/ "longo" prazo:
+    montar tooltip e linha-vertical em old-chart (d3js) p/ começar a usar ele
+    https://www.section.io/engineering-education/push-notification-in-nodejs-using-service-worker/
 
 
   Notas:
-    Vercel não permite uso de websocket
+    Vercel não permite uso de websocket:
       - https://stackoverflow.com/questions/65379821/cant-connect-to-websocket-server-after-pushing-to-vercel
       - https://stackoverflow.com/questions/70606156/socketio-with-nextjs-deployed-to-vercel-socket-is-not-connecting
     Como host será na vercel:
@@ -62,19 +68,9 @@ import Header from '../../components/elements/header'
 
 
 
-const fetcher = (...args) => fetch(...args).then(res => res.json())
-
-function formatCurrency(number, currency, lang) {
-
-  lang = typeof lang == 'undefined' ? 'pt-BR' : lang
-  currency = typeof currency == 'undefined' ? 'BRL' : currency
-
-  const res = new Intl.NumberFormat(lang, { style: 'currency', currency: currency }).format(number)
-  return res
-}
 
 
-// getServerSideProps
+
 export async function getServerSideProps(context) {
 
   // isso só ta aqui p/ dar tempo de inicializar o useRouter()
@@ -99,15 +95,15 @@ function Price({ name }) {
   //console.log(data)
   
   // maybe create a 404 template?
-  if(data.error) return <div>Error {data.status} {data.error}</div>
-  if(data.errno) return <div>Error {data.errno} (provavelmente deu ruim na API) :(</div>
+  if(data.error) return <div>Error { data.status } { data.error }</div>
+  if(data.errno) return <div>Error { data.errno } (provavelmente deu ruim na API ou na sua net) :(</div>
 
   if(typeof data.image.small === 'undefined') console.log(data)
 
   return (
     <div>
       <div>
-        <div className={'first-part'}>
+        <div className={'name-and-icon'}>
           <img src={data.image.small} />
           <h1>{data.name}</h1>
         </div>
