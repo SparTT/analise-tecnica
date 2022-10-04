@@ -115,6 +115,7 @@ async function sendDelete(updateUserData) {
       document.querySelector('.modal-header .title').innerText = 'Editar'
       closeModal();
     }
+    document.body.style.overflow = 'auto'
 
     // stopLoading()
   })
@@ -151,6 +152,7 @@ async function addCryptoData(updateUserData) {
       document.querySelector('.modal-header .title').innerText = 'Adicionar'
       closeModal();
     }
+    document.body.style.overflow = 'auto'
   })
 }
 
