@@ -4,6 +4,7 @@
   max-width: 1300px;
   margin-left: auto;
   margin-right: auto;
+  margin-top: 6em;
 }
 
 /*
@@ -12,8 +13,10 @@
   height: 50px;
 }
 */
-.container h1 {
+
+.crypto-title {
   font-size: 2.5rem;
+  font-weight: bold;
   margin-left: 10px;
 }
 
@@ -31,20 +34,24 @@
 .market-cap {
   font-size: 0.8rem;
   margin-top: 10px;
+  font-weight: bold;
 }
 
 #market-cap-val {
   font-weight: bold;
-  color: gray;
-}
-
-.market-change {
-  margin-left: 5px;
 }
 
 @media screen and (min-width: 799px) {
   .chart-container {
-    max-width: 50vw;
+    max-width: 1300px;
     margin-right: auto;
+    margin-left: auto;
+  }
+}
+
+@media screen and (max-width: 799px) {
+
+  .crypto-main-data {
+    margin-left: 10px;
   }
 }

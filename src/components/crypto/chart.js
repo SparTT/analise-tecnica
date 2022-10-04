@@ -41,13 +41,13 @@ const CryptoChart = ({ name, vs_currency }) => {
   useEffect(async () => {
     //let res = await marketChart({query: {id: name, vs_currency: vs_currency}})
 
-    const res = await fetch(`/api/crypto/market-chart?id=${name}&vs_currency=${vs_currency}`).then(resp => resp.json()).catch(err => err)
+    console.log('vs', vs_currency)
+    const res = await fetch(`/api/crypto/market-chart?id=${name}&vs_currency=${vs_currency}`).then(resp => resp.json())
     console.log(res)
     setReactData(res)
    }, [])
 
-  if(reactData === null) return <div></div>
-  if(reactData.error) return <div>Erro ao carregar gráfico</div>
+  if(reactData === null) return <div>Carregando</div>
 
   //console.log(reactData.prices)
   // maybe create a 404 template?
@@ -86,7 +86,7 @@ const CryptoChart = ({ name, vs_currency }) => {
 
   return (
     <div>
-      <Line data={chartData}  options={Config}/>
+      <Line data={chartData} options={Config}/>
     </div>
   )
 

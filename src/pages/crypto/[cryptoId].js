@@ -1,145 +1,251 @@
-//import { useRouter } from 'next/router'
+import { useRouter } from 'next/router'
 import styles from '../../stylesheet/pages/cryptos.module.css'
-//import { useEffect } from 'react'
+import { useEffect } from 'react'
+import io from 'socket.io-client'
+import React, { useState, } from 'react';
 import Chart from '../../components/crypto/chart'
-import useSWR from 'swr'
 import Header from '../../components/elements/header'
-import { formatCurrency, fetcher } from '../../components/general-scripts/reusable-scripts'
+import { formatCurrency, capitalize, getCurrentFiat } from '../../components/general-scripts/reusable-scripts'
+import Head from 'next/head'
 
+let socket
 
-// https://nextjs.org/learn/seo/introduction-to-seo
-// https://socket.io/docs/v3/emitting-events/
-// https://github.com/socketio/socket.io/discussions/4210
-
-// https://dev.to/kalpitrathore/various-ways-of-real-time-data-communication-in-node-js-1h2b
-
-// https://socket.io/docs/v3/rooms/
-// https://javascript.plainenglish.io/how-to-cache-api-calls-in-next-js-f4b6aefa84f1?gi=50b2fe6fe611
-// https://dev.to/vadorequest/a-2021-guide-about-structuring-your-next-js-project-in-a-flexible-and-efficient-way-472
-
-
-/*
-
-  Objetivos p/ agr relacionados ao backend: 
-    puxar somente as informações que importam da API ?
-    puxar vs_currencies (moeda que o cara prefere)
-    trocar o maximo de let p/ const possivel
-    achar uma folder structure boa
-    achar meio p/ renderizar somente os preços novos em [cryptoId], sem alterar o grafico -- ok
-    colocar as funções repetidas em um lugar só
-
-  P/ frontend:
-    criar head p/ pesquisa
-    https://stackoverflow.com/questions/30256695/chart-js-drawing-an-arbitrary-vertical-line -- fazer essa linha vertical arbitraria
-    https://webdevpuneet.com/chartjs-vertical-line-on-points-and-custom-tooltip/#gsc.tab=0
-  criar toda a lógica desse código acima p/ os gráficos?
-
-
-  paginas p/ serem criadas:
-    dashboard -- onde ficará as cryptos escolhidas pelo usuário
-    login
-    cadastro
-    painel de admin? -- talvez
-
-  métodos p/ serem criados:
-    adicionarNoPortifolio -- adicionar alguma crypto + valor que usuário mantem dela
-    alterarPortifolio -- alterar alguma valor que o usuário adicionou de uma crypto
-    removerDoPortifolio -- remover crypto do portifolio
-    criarConta
-    logarUsuario
-
-
-
-  P/ "longo" prazo:
-    montar tooltip e linha-vertical em old-chart (d3js) p/ começar a usar ele
-    https://www.section.io/engineering-education/push-notification-in-nodejs-using-service-worker/
-
-
-  Notas:
-    Vercel não permite uso de websocket:
-      - https://stackoverflow.com/questions/65379821/cant-connect-to-websocket-server-after-pushing-to-vercel
-      - https://stackoverflow.com/questions/70606156/socketio-with-nextjs-deployed-to-vercel-socket-is-not-connecting
-    Como host será na vercel:
-      - https://vercel.com/docs/concepts/solutions/realtime
-      - https://swr.vercel.app/
-      - https://swr.vercel.app/docs/getting-started
-
-*/
-
-
-
-
-
-
+// getServerSideProps
 export async function getServerSideProps(context) {
+  // Fetch data from external API
+  const crypto = context.params.cryptoId
+  //const vs = context.query.vs // &vs=${vs}
+  //const data = await fetch(`/api/crypto/get-crypto?id=${crypto}`).then(resp => resp.json())
+  let  data = [ null ]
 
-  // isso só ta aqui p/ dar tempo de inicializar o useRouter()
-  const cryptoId = context.params.cryptoId
+  // ,{secure: true,    rejectUnauthorized: false}
 
-  return { props: { cryptoId } }
+
+  // Pass data to the page via props
+  return { props: { data } }
 }
 
-const fiatPreference = 'brl'
+console.time('get-data')
 
-function getData(cryptoId) {
-  const { data } = useSWR(`/api/crypto/get-crypto?id=${cryptoId}`, fetcher)
-  return data
+
+const CalculateQtd = ({ cryptoPrice, cryptoName, fiatPreference }) => {
+
+
+  // decidir se calculo ficará aqui ou client-side
+
+  const[ lastChangedVal, setLastChangedVal ] = useState(null);
+
+
+  console.log(cryptoPrice)
+
+  useEffect(() => {
+
+    if(lastChangedVal === 'crypto') {
+      convertCrypto()
+    } else {
+      convertFiat()
+    }
+
+  })
+
+
+  function convertCrypto() {
+
+    setLastChangedVal('crypto')
+
+    const fiat = Number(document.querySelector('#fiat-input').value)
+    const res = fiat / cryptoPrice
+
+    document.querySelector('#crypto-input').value = res
+
+  }
+
+  function convertFiat() {
+
+    setLastChangedVal('fiat')
+
+    const crypto = Number(document.querySelector('#crypto-input').value)
+    const res = crypto * cryptoPrice
+
+    document.querySelector('#fiat-input').value = res
+
+  }
+
+
+  return(
+    <>
+    <div className="calculate-container">
+      <div className='input-container'>
+        <span className="input-group-text">{cryptoName.toUpperCase()}</span>
+        <input className="calculate-input" type="number" id="crypto-input" min="" defaultValue={1} onChange={() => convertFiat()} />
+      </div>
+      <div className='input-container'>
+        <span className="input-group-text">{fiatPreference.toUpperCase()}</span>
+        <input className="calculate-input" type="number" name="fiat-input" id="fiat-input" defaultValue={cryptoPrice} onChange={() => convertCrypto()} />
+      </div>
+    </div>
+    <style jsx>{`
+      .calculate-container {
+        padding: 15px;
+        display: flex;
+        /*flex-wrap: wrap;*/
+        gap: 15px;
+        margin-top: 2em;
+        margin-bottom: 2em;
+        margin-left: auto;
+        margin-right: auto;
+        background-color: aliceblue;
+        border: 3px solid #dbe9f5;
+        border-radius: 0.375rem;
+        padding-top: 30px;
+        padding-bottom: 30px;
+        max-width: 600px;
+        justify-content: center;
+      }
+
+      .input-container {
+        width: auto;
+        font-weight: bold;
+      }
+
+      .input-container, .calculate-input {
+        font-size: 1.2rem;
+      }
+
+      .calculate-input {
+        width: 50%;
+      }
+
+      @media screen and (min-width: 629px) {
+        .input-container:nth-child(1) {text-align: right;}
+        .input-container:nth-child(2) {text-align: left;}
+      }
+
+      @media screen and (max-width: 629px) {
+        .input-container {text-align: center;}
+      }
+
+
+      .input-group-text {
+        margin-right: 5px;
+      }
+
+    `}</style>
+    </>
+  )
 }
 
-function Price({ name }) {
-  
-  const data = getData(name)
 
-  if(!data) return <div>Carregando</div>
-
-  //console.log(data)
+function Price({ name, vsCurrency, setVsCurrency }) {
   
-  // maybe create a 404 template?
-  if(data.error) return <div>Error { data.status } { data.error }</div>
-  if(data.errno) return <div>Error { data.errno } (provavelmente deu ruim na API ou na sua net) :(</div>
+  let data = [ null ]
+  
+  const[ reactData, setReactData ] = useState(data[0]);
+
+  useEffect(() => socketInitializer(name), [])
+
+  
+  const socketInitializer = async (crypto) => {
+
+    let vsFiat = getCurrentFiat()
+    setVsCurrency(vsFiat)
+
+    await fetch('/api/crypto/crypto-socket').catch(err => console.log(err))
+    socket = io()
+  
+    socket.on('connect', msg => {
+      console.log('connected')
+
+
+      // repetido
+      let oldVal = vsFiat
+      document.querySelector('.currency-type').addEventListener('focus', () => {
+        //console.log('focus', document.querySelector('.currency-type').value)
+        oldVal = document.querySelector('.currency-type').value
+        if (document.activeElement != document.body) document.activeElement.blur();
+      })
+
+    })
+    
+    socket.emit('single-crypto', crypto);
+
+    
+    socket.on('connect_error', async (reason) => {
+      console.log(`connect_error status: ${window.navigator.onLine} ${reason}`)
+      if (window.navigator.onLine === true) {
+        // user ok mas server not ok
+        socket.disconnect()
+        await socketInitializer()
+        //window.location.reload()
+      } 
+    })
+
+
+    socket.on('data', res => {
+      //if(!res.error)  res = res[0]
+
+      setReactData(res)
+      console.timeEnd('get-data')
+    })
+
+    socket.on('update', res => {
+     setReactData(res)
+    })
+  }
+
+  if(reactData === null) return <div>Carregando</div>
+
+  //console.log('data', reactData)
+
+  data = reactData
 
   if(typeof data.image.small === 'undefined') console.log(data)
 
   return (
-    <div>
-      <div>
-        <div className={'name-and-icon'}>
-          <img src={data.image.small} />
-          <h1>{data.name}</h1>
+    <>
+        <div className={styles['crypto-main-data']}>
+          <div className={'name-and-icon'}>
+            <img src={data.image.small} />
+            <div className={styles['crypto-title']}>{data.name} ({data.symbol.toUpperCase()}) </div>
+          </div>
+          <div className={styles['price-container']}>
+            <span className={styles.price}>{formatCurrency(data.market_data.current_price[vsCurrency], vsCurrency)}</span> 
+            <span className={`${['price-change']} ${data.market_data.price_change_percentage_24h_in_currency[vsCurrency]< 0 ? ['price-down'] : ['price-up']}`}>
+              {data.market_data.price_change_percentage_24h_in_currency[vsCurrency].toFixed(2)}%  ({formatCurrency(data.market_data.price_change_24h_in_currency[vsCurrency], vsCurrency)}) 
+            </span>
+          </div>
+          <div className={styles['market-cap']}> 
+            <span>Market cap: <span id={styles['market-cap-val']}>{formatCurrency(data.market_data.market_cap[vsCurrency], vsCurrency)}</span> </span>
+            <span className={`${'price-change'} ${data.market_data.market_cap_change_percentage_24h < 0 ? ['price-down'] : ['price-up']}`}>
+              {data.market_data.market_cap_change_percentage_24h.toFixed(2)}%
+            </span>
+          </div>
         </div>
-        <div className={styles['price-container']}>
-          <span className={styles.price}>{formatCurrency(data.market_data.current_price[fiatPreference])}</span> 
-          <span className={`${['price-change']} ${data.market_data.price_change_percentage_24h_in_currency[fiatPreference]< 0 ? ['price-down'] : ['price-up']}`}>
-            {data.market_data.price_change_percentage_24h_in_currency[fiatPreference].toFixed(2)}%  ({formatCurrency(data.market_data.price_change_24h_in_currency[fiatPreference])}) 
-          </span>
-        </div>
-      </div>
-      <div className={styles['market-cap']}> 
-        <span>Market cap: <span id={styles['market-cap-val']}>{formatCurrency(data.market_data.market_cap[fiatPreference])}</span> </span>
-        <span className={`${styles['market-change']} ${data.market_data.market_cap_change_percentage_24h < 0 ? ['price-down'] : ['price-up']}`}>
-          {data.market_data.market_cap_change_percentage_24h.toFixed(2)}%
-        </span>
-      </div>
-    </div>
+
+        <CalculateQtd  cryptoPrice={data.market_data.current_price[vsCurrency]} cryptoName={data.symbol} fiatPreference={vsCurrency} />
+    </>
   )
 
 }
 
-const Crypto = ({ cryptoId }) => {
 
+const Crypto = ({ data, vsCurrency, setVsCurrency }) => {
 
-  //console.log('cryptoId', cryptoId)
+  const mainRouter = useRouter()
+
+  const { cryptoId } = mainRouter.query
+
+  console.log('r', vsCurrency)
 
   return (
-    <div>
-      <Header />
+    <>
+      <Head>
+        <title>{capitalize(cryptoId)} price</title>
+      </Head>
       <div className={styles.container}> 
-        <Price name={cryptoId} />
-        <div className={styles['chart-container']}>
-          <Chart name={cryptoId} vs_currency={fiatPreference}></Chart>
-        </div>
+        <Price name={cryptoId} vsCurrency={vsCurrency} setVsCurrency={setVsCurrency} />
       </div>
-    </div>
+    </>
   )
 
 }

@@ -9,25 +9,27 @@ function sleep(ms) {
 
 export default async function handler (req, res) {
 
+  if(typeof req.query.name == 'undefined' ) return res.status(500).json({ error : 'nenhum valor inserido' })
 
-  const id = typeof req.query.id == 'undefined' ? 'dogecoin' : req.query.id
-  const vs_currencies = typeof req.query.vs == 'undefined' ? 'brl' : req.query.vs
+  const name = req.query.name
 
-
-  let url = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=${vs_currencies}&ids=${id}&order=market_cap_desc&per_page=100&page=1&sparkline=false&price_change_percentage=1h,24h,7d,30d,200d,1y`
-
-  url = `https://api.coingecko.com/api/v3/coins/${id}`
-
-  await fetch(url)
+  await fetch(`https://api.coingecko.com/api/v3/search?query=${name}`)
   .then(resp => {
     //console.log(resp.status, resp.statusText)
     return resp.json()
   })
   .then(resp => {
+    //console.log(resp)
 
     if(resp.error) return res.status(404).json({error: resp.error})
 
-    res.status(200).json(resp)
+    let data = []
+
+    for(let i = 0; i < 5; i++) {
+      if(typeof resp.coins[i] != 'undefined') data.push(resp.coins[i])
+    }
+
+    res.status(200).json(data)
   }).catch(error => {
     res.status(500).json(error)
   })

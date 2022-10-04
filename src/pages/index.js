@@ -1,40 +1,51 @@
+import { useSession, getSession, signIn } from "next-auth/react"
 import Head from 'next/head'
-import Header from '../components/elements/header'
+//import Header from '../components/elements/header'
 import useSWR from 'swr'
-import { formatCurrency, fetcher } from '../components/general-scripts/reusable-scripts'
+import { formatCurrency, getCurrentFiat, fetcher } from '../components/general-scripts/reusable-scripts'
+import React, { useState, useEffect } from 'react';
+//import io from 'socket.io-client'
+import styles from '../stylesheet/components/table.module.css'
 
+//let socket
 
-const fiatPreference = 'brl'
-
-function getData(cryptoId) {
-  const { data } = useSWR(`/api/crypto/get-many-crypto?id=${cryptoId}`, fetcher)
+function getData(cryptoId, vs_currency) {
+  const { data } = useSWR(`/api/crypto/get-many-crypto?id=${cryptoId}&fiat=${vs_currency}`, fetcher, { refreshInterval: (1000 * 15) })
   return data
 }
 
+function Main({ vsCurrency, setVsCurrency }) {
 
+  const cryptoIds = 'bitcoin,ethereum,monero,smooth-love-potion,polygon,binancecoin,usd-coin,solana,polkadot,dogecoin,litecoin,gala,cardano,magic-internet-money'
+  
+  useEffect(() => initializer(), [])
 
-function Main() {
+  let vsFiat
+  const initializer = async () => {
+    vsFiat = getCurrentFiat()
+    setVsCurrency(vsFiat)
+    console.log('vsC', vsCurrency, vsFiat)
+  }
 
-  const cryptoIds = 'bitcoin,ethereum,monero,smooth-love-potion,axie-infinity,binancecoin,usd-coin,solana,polkadot,dogecoin,litecoin,gala,bomber-coin'
-
-  const data = getData(cryptoIds)
+  const data = getData(cryptoIds, vsCurrency)
 
   if(!data) return <div>Carregando</div>
 
+  console.log('data loaded', new Date())
   console.log(data)
 
   return (
-    <main>
-    <h1 className="title">
+    <main className={styles.main}>
+    <h1 className={styles.title}>
       Main Cryptos
     </h1>
 
-    <span className="description">
+    <span className={styles.description}>
       um textinho de descrição
     </span>
 
-    <div className='coin-table'>
-      <div className='grid-header'>
+    <div className={styles.table}>
+      <div className={`${styles['table-head']} ${'table-head'}`}>
         <div className='col-1'>Nome</div>
         <div className='col-2'>Preço</div>
         <div className='col-3 text-center'>1h</div>
@@ -43,18 +54,18 @@ function Main() {
         <div className='col-6 text-center'>30d</div>
         <div className='col-7 text-center'>Market Cap</div>
       </div>
-      <div className="grid">
+      <div className={styles['table-body']}>
         {data.map( coin => (
-          <div className="card" key={coin.id}>
+          <div className={`${styles['card']} ${'card'}`} key={coin.id}>
             <div className='col-1'>
-              <div className='name-and-icon'>
-                <img src={`${coin.image.replace('/large/', '/small/')}`} draggable='false'></img>
-                <a href={`/crypto/${coin.id}`}><span className='coin-name'>{coin.name}</span></a>
+              <div className={`${styles['name-and-icon']} ${'name-and-icon'}`}>
+                <img src={`${coin.image.replace('/large/', '/small/')}`} draggable='false' className={styles['crypto-icon']}></img>
+                <a href={`/crypto/${coin.id}`} className={styles['link-crypto']}><span className={styles['coin-name']}>{coin.name}</span></a>
               </div>
             </div>
             <div className='col-2'>
-              <span className='current-price'>
-                {formatCurrency(coin.current_price)} 
+              <span className={styles['current-price']}>
+                {formatCurrency(coin.current_price, vsCurrency)} 
               </span>
             </div>
             <div className='col-3 text-center'>
@@ -78,7 +89,7 @@ function Main() {
               </span>
             </div>  
             <div className='col-7 text-center'>
-              <span>{formatCurrency(coin.market_cap)}</span>
+              <span>{formatCurrency(coin.market_cap, vsCurrency)}</span>
             </div>  
           </div>
         ))}
@@ -86,49 +97,12 @@ function Main() {
     </div>
 
     <style jsx>{`
-      main {
-        padding: 1rem 0;
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        width: 100%;
-        max-width: 1300px;
-      }
 
-      .coin-table {
-        width: 90%;
-        margin-left: auto;
-        margin-right: auto;
-        margin-top: 4rem;
-        box-shadow: 1px 1px 10px 1px #00000014;
-        border-radius: 5px;
-      }
-
-      .grid {
-        width: 100%;
-        display: grid;
-        place-items: center;
-        grid-row-gap: 10px;
-      }
-
-
-      .grid-header, .card {
-        display: grid;
+      .table-head, .card {
         grid-template-areas:
             "name price 1h 24h 7d 30d market-cap";
         width: 100%;
-        align-items: center;
         grid-template-columns: 20% 15% 10% 10% 10% 10% 25%;
-        padding-top: 2vh;
-        padding-bottom: 2vh;
-        border-bottom: 1px solid lightgray;
-      }
-      
-      .grid-header div {
-        font-size: 1.1rem;
-        font-weight: bold;
       }
 
       .col-1 {
@@ -140,7 +114,6 @@ function Main() {
         text-align: right;
         grid-area: price;
       }
-
       
       .col-3 {
         grid-area: 1h;
@@ -162,53 +135,9 @@ function Main() {
         grid-area: market-cap;
       }
 
-      .card {
-        align-items: center;
-      }
-
-      a {
-        color: black;
-        text-decoration: none;
-      }
-
-      .name-and-icon img {
-        width: 35px
-      }
-
-      .coin-name {
-        margin-left: 10px;
-        font-weight: bold;
-        font-size: 0.95rem;
-      }
-
-      .current-price {
-        font-weight: bold;
-      }
-
-      .title {
-        margin: 0;
-        line-height: 1.15;
-        font-size: 2.5rem;
-      }
-
-      .title,
-      .description {
-        text-align: center;
-      }
-
-      .description {
-        line-height: 1.5;
-        font-size: 1rem;
-        fotn-weight: bold
-      }
-      
       @media screen and (max-width: 799px) {
 
-        .coin-table {
-          box-shadow: unset;
-        }
-
-        .grid-header {
+        .table-head {
           display: none;
         }
         
@@ -221,11 +150,6 @@ function Main() {
           border: none;
           box-shadow: 1px 1px 10px 1px #00000014;
         }
-        
-        .coin-name {
-          font-size: 1.1rem;
-        }
-
         .col-2 {
           margin-left: 10px;
         }
@@ -249,31 +173,16 @@ function Main() {
 }
 
 
-export default function Home() {
+export default function Home({ setCryptoStr, vsCurrency, setVsCurrency}) {
   return (
-    <div>
+    <>
       <Head>
         <title>Home</title>
-        <link rel="icon" href="/favicon.ico" />
       </Head>
-      <Header />
       <div className="container">
-      <Main />
-     
-
-      <style jsx>{`
-        .container {
-          min-height: 100vh;
-          padding: 1rem 0;
-          display: flex;
-          flex-direction: column;
-          justify-content: center;
-          align-items: center;
-        }
-
-      `}</style>
-    </div>
-    </div>
+        <Main setCryptoStr={setCryptoStr} vsCurrency={vsCurrency} setVsCurrency={setVsCurrency}  />
+      </div>
+    </>
     
   )
 }
