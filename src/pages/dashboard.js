@@ -2,14 +2,10 @@ import { useSession, getSession, signIn } from "next-auth/react"
 import Header from "../components/elements/header"
 import React, { useState, useEffect } from 'react';
 import styles from '../stylesheet/components/table.module.css'
-//import io from 'socket.io-client'
 import { formatCurrency, getCurrentFiat, fetcher } from '../components/general-scripts/reusable-scripts'
 import Head from 'next/head'
 import Modal from '../components/elements/modal'
 import useSWR from 'swr'
-
-//let socket
-//let cryptoString
 
 let notVisible = '*****'
 let cryptoString

@@ -1,13 +1,9 @@
 import { useSession, getSession, signIn } from "next-auth/react"
 import Head from 'next/head'
-//import Header from '../components/elements/header'
 import useSWR from 'swr'
 import { formatCurrency, getCurrentFiat, fetcher } from '../components/general-scripts/reusable-scripts'
 import React, { useState, useEffect } from 'react';
-//import io from 'socket.io-client'
 import styles from '../stylesheet/components/table.module.css'
-
-//let socket
 
 function getData(cryptoId, vs_currency) {
   const { data } = useSWR(`/api/crypto/get-many-crypto?id=${cryptoId}&fiat=${vs_currency}`, fetcher, { refreshInterval: (1000 * 15) })
@@ -17,7 +13,7 @@ function getData(cryptoId, vs_currency) {
 function Main({ vsCurrency, setVsCurrency }) {
 
   const cryptoIds = 'bitcoin,ethereum,monero,smooth-love-potion,polygon,binancecoin,usd-coin,solana,polkadot,dogecoin,litecoin,gala,cardano,magic-internet-money'
-  
+
   useEffect(() => initializer(), [])
 
   let vsFiat
