@@ -42,6 +42,7 @@ function closeModal() {
   let modal = document.querySelector('#demo-modal')
 
   document.querySelector('.modal-body').style.display = 'none'
+  document.body.style.overflow = 'auto'
   modal.removeAttribute('open')
 
   window.removeEventListener('resize', setModalHeight) 
