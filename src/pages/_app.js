@@ -13,7 +13,6 @@ export default function MyApp({
 }) {
 
 
-  const [cryptoStr, setCryptoStr] = useState(null)
   const [ vsCurrency, setVsCurrency ] = useState('brl')
 
   // fazer cryptoStr funcionar em dashboard
@@ -27,6 +26,6 @@ export default function MyApp({
         <link rel="icon" href="/keyword-research.ico" />
       </Head>
     <Header {...pageProps.session} vsCurrency={vsCurrency} setVsCurrency={setVsCurrency} />
-    <Component {...pageProps} cryptoStr={cryptoStr} setCryptoStr={setCryptoStr} vsCurrency={vsCurrency} setVsCurrency={setVsCurrency} />
+    <Component {...pageProps} vsCurrency={vsCurrency} setVsCurrency={setVsCurrency} />
   </SessionProvider>)
 }

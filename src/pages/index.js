@@ -1,12 +1,15 @@
 import { useSession, getSession, signIn } from "next-auth/react"
 import Head from 'next/head'
 import useSWR from 'swr'
-import { formatCurrency, getCurrentFiat, fetcher } from '../components/general-scripts/reusable-scripts'
+import { formatCurrency, getCurrentFiat, fetcher, prepareMultCrypto } from '../components/general-scripts/reusable-scripts'
 import React, { useState, useEffect } from 'react';
 import styles from '../stylesheet/components/table.module.css'
 
 function getData(cryptoId, vs_currency) {
-  const { data } = useSWR(`/api/crypto/get-many-crypto?id=${cryptoId}&fiat=${vs_currency}`, fetcher, { refreshInterval: (1000 * 15) })
+  
+  let url = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=${vs_currency}&ids=${cryptoId}&order=market_cap_desc&per_page=100&page=1&sparkline=false&price_change_percentage=1h,24h,7d,30d,1y`
+  
+  const { data } = useSWR(url, fetcher)
   return data
 }
 
@@ -25,10 +28,19 @@ function Main({ vsCurrency, setVsCurrency }) {
 
   const data = getData(cryptoIds, vsCurrency)
 
-  if(!data) return <div>Carregando</div>
+  if (!data) return <div>Carregando</div>
+
+  console.log(data)
+
+  if (Object.keys(data).includes('status')) {
+    console.log('status err', data.status)
+    if (data.status.error_code === 429) return <div className="container">Matou a API :(</div>
+  }
+
+  let marketData = prepareMultCrypto(data)
 
   console.log('data loaded', new Date())
-  console.log(data)
+  console.log(marketData)
 
   return (
     <main className={styles.main}>
@@ -51,7 +63,7 @@ function Main({ vsCurrency, setVsCurrency }) {
         <div className='col-7 text-center'>Market Cap</div>
       </div>
       <div className={styles['table-body']}>
-        {data.map( coin => (
+        {marketData.map( coin => (
           <div className={`${styles['card']} ${'card'}`} key={coin.id}>
             <div className='col-1'>
               <div className={`${styles['name-and-icon']} ${'name-and-icon'}`}>

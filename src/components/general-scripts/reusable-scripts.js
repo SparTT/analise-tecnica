@@ -47,3 +47,20 @@ export function getCurrentFiat() {
   }
   return vsFiat
 }
+
+
+export function prepareMultCrypto(resp) {
+
+  for(let i = 0; i < resp.length; i++) {
+    let coin = resp[i]
+    for(let j = 0; j < Object.keys(coin).length; j++) {
+      if(Object.keys(coin)[j].includes('price_change_percentage')) {
+        //console.log(Object.values(coin)[j])
+        coin[Object.keys(coin)[j]] = Object.values(coin)[j] === null ? 0 : Number(Object.values(coin)[j].toFixed(2)) // + '%'
+        //console.log(coin[Object.keys(coin)[j]])
+      }
+    }
+  }
+
+  return resp
+}

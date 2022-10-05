@@ -2,13 +2,13 @@ import { useSession, getSession, signIn } from "next-auth/react"
 import Header from "../components/elements/header"
 import React, { useState, useEffect } from 'react';
 import styles from '../stylesheet/components/table.module.css'
-import { formatCurrency, getCurrentFiat, fetcher } from '../components/general-scripts/reusable-scripts'
+import { formatCurrency, getCurrentFiat, fetcher, prepareMultCrypto } from '../components/general-scripts/reusable-scripts'
 import Head from 'next/head'
 import Modal from '../components/elements/modal'
 import useSWR from 'swr'
 
 let notVisible = '*****'
-let cryptoString
+//let cryptoString
 //let vsFiat
 
 const DesktopView = ({ marketData, setIsAdd, userData, isvisible, vsCurrency }) => {
@@ -267,7 +267,10 @@ export async function getServerSideProps(context) {
   const session = await getSession(context)
 
   let isVisibleCookie = context.req.headers.cookie
-  if (isVisibleCookie.search('isVisible') > -1) {
+
+  if (typeof isVisibleCookie === 'undefined') isVisibleCookie = 'isVisible=true'
+
+  if (isVisibleCookie.search('isVisible') > -1 && typeof isVisibleCookie !== 'undefined') {
     isVisibleCookie = isVisibleCookie.split('isVisible=')[1]
     isVisibleCookie = isVisibleCookie.split(';')[0]
     console.log('isVisibleCookie', isVisibleCookie)
@@ -277,24 +280,42 @@ export async function getServerSideProps(context) {
     console.log(isVisibleCookie)
     isVisibleCookie = true
   }
+
+  const userVal = await fetch(`${process.env.API_BASE_URL}/api/user/get-user?&session_accessToken=${session.accessToken.sub}`)
+  .then(resp => resp.json())
+  .then(async resp => {
+    if (resp.error) {
+      console(resp.error)
+    } else {
+      return resp
+    }
+  })
+
   return {
-    props: { session, isVisibleCookie }
+    props: { session, isVisibleCookie, userVal }
   }
+
+  // https://blog.logrocket.com/handling-data-fetching-next-js-useswr/ -- find mutate later to apply on updates realized
+
 }
 
 function getData(cryptoId, vs_currency) {
-  const { data } = useSWR(`/api/crypto/get-many-crypto?id=${cryptoId}&fiat=${vs_currency}`, fetcher, { refreshInterval: (1000 * 15) })
+  
+  let url = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=${vs_currency}&ids=${cryptoId}&order=market_cap_desc&per_page=100
+  &page=1&sparkline=false&price_change_percentage=1h,24h,7d,30d,1y`
+
+  const { data } = useSWR(url, fetcher)
   return data
 }
 
-const Profile = ({ session, isVisibleCookie, cryptoStr, setCryptoStr, vsCurrency, setVsCurrency }) => {
+const Profile = ({ session, isVisibleCookie, vsCurrency, setVsCurrency, userVal}) => {
 
 
-  const [ userData, setUserData ] = useState(null);
+  const [ userData, setUserData ] = useState(userVal);
   const [ isAdd, setIsAdd ] = useState(false);
   const [ clientWidth, setClientWidth ] = useState(null);
   const [ isvisible, setisVisible ] = useState(isVisibleCookie)
-  let data
+  const [ cryptoStr, setCryptoStr ] = useState(Object.keys(userData).toString())
 
   function updateUserData(userData) {
     setUserData(userData)
@@ -303,52 +324,24 @@ const Profile = ({ session, isVisibleCookie, cryptoStr, setCryptoStr, vsCurrency
       newString: Object.keys(userData).toString(),
       newFiat: vsCurrency
     }
-    //if (socket) socket.emit('change-room', data)
-    console.log('new cryptoString', data.newString)
     setCryptoStr(data.newString)
-    cryptoString = data.newString
+    console.log('new cryptoString', data.newString)
   }
 
   useEffect( async () => {
-
-    console.log('here')
     
     let vsFiat = getCurrentFiat()
     setVsCurrency(vsFiat)
 
     if (session) {
       window.addEventListener('resize', () => {
-        let type
-        if (window.innerWidth > 799) {
-          type = 'desktop'
-        } else {
-          type = 'mobile'
-        }
-
+        let type = window.innerWidth > 799 ? 'desktop' : 'mobile'
         if (type !== clientWidth) setClientWidth(type)
       }) 
       
-      if (window.innerWidth > 799) {
-        setClientWidth('desktop')
-      } else {
-        setClientWidth('mobile')
-      } 
-
+      window.innerWidth > 799 ? setClientWidth('desktop') : setClientWidth('mobile')
+      
       console.time('get-data')
-      await fetch('/api/user/get-user')
-      .then(resp => resp.json())
-      .then(async resp => {
-        if (resp.error) {
-          alert(resp.error)
-        } else {
-          setUserData(resp)
-          cryptoString = Object.keys(resp).toString()
-          setCryptoStr(cryptoString)
-          //initializer()
-        }
-
-      })
-
     } else {
       signIn()
     }
@@ -372,19 +365,24 @@ const Profile = ({ session, isVisibleCookie, cryptoStr, setCryptoStr, vsCurrency
     }
   }
 
-  data = getData(cryptoStr, vsCurrency)
+  let data = getData(cryptoStr, vsCurrency)
 
   if (typeof cryptoStr === 'undefined' || typeof vsCurrency === 'undefined') data = undefined
 
   if (userData === null || !data || typeof data === 'undefined' ) return <div className="container">Carregando</div>
+
+
+  console.log(cryptoStr, data)
+
+  if (Object.keys(data).includes('status')) {
+    console.log('status err', data.status)
+    if (data.status.error_code === 429) return <div className="container">Matou a API :(</div>
+  }
+  
+  data = prepareMultCrypto(data)
   
   // faz merge dos dados
   let account_total = 0
-
-  //const marketData = data
-
-  console.log(cryptoString, data)
-
 
   for(let el of data) {
     for(let i = 0; i < Object.values(userData).length; i++) {
