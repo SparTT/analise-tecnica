@@ -281,15 +281,22 @@ export async function getServerSideProps(context) {
     isVisibleCookie = true
   }
 
-  const userVal = await fetch(`${process.env.API_BASE_URL}/api/user/get-user?&session_accessToken=${session.accessToken.sub}`)
-  .then(resp => resp.json())
-  .then(async resp => {
-    if (resp.error) {
-      console(resp.error)
-    } else {
-      return resp
-    }
-  })
+  let userVal
+  if(session) {
+    userVal = await fetch(`${process.env.API_BASE_URL}/api/user/get-user?&session_accessToken=${session.accessToken.sub}`)
+    .then(resp => resp.json())
+    .then(async resp => {
+      if (resp.error) {
+        console(resp.error)
+      } else {
+        return resp
+      }
+    })
+  } else {
+    userVal = null
+  }
+
+
 
   return {
     props: { session, isVisibleCookie, userVal }
@@ -315,7 +322,7 @@ const Profile = ({ session, isVisibleCookie, vsCurrency, setVsCurrency, userVal}
   const [ isAdd, setIsAdd ] = useState(false);
   const [ clientWidth, setClientWidth ] = useState(null);
   const [ isvisible, setisVisible ] = useState(isVisibleCookie)
-  const [ cryptoStr, setCryptoStr ] = useState(Object.keys(userData).toString())
+  const [ cryptoStr, setCryptoStr ] = useState(userData !== null ? Object.keys(userData).toString() : null)
 
   function updateUserData(userData) {
     setUserData(userData)
