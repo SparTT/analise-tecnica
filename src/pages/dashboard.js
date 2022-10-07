@@ -349,7 +349,7 @@ const Profile = ({ session, isVisibleCookie, vsCurrency, setVsCurrency, userVal}
     }
     setCryptoStr(data.newString)
     console.log('new cryptoString', data.newString)
-    setCookieUser()
+    setCookieUser(userData)
   }
 
   useEffect( async () => {
@@ -389,13 +389,15 @@ const Profile = ({ session, isVisibleCookie, vsCurrency, setVsCurrency, userVal}
     }
   }
 
-  function setCookieUser() {
+  function setCookieUser(data) {
+
+    if(!data) data = userData
 
     let now = new Date()
     const time = now.getTime()
     const expireTime = time + (1000 * 60) * 60 * 24 * 60
     now.setTime(expireTime)
-    document.cookie = `userVal=${JSON.stringify(userData)};expires='${now.toUTCString()}';path=/;`
+    document.cookie = `userVal=${JSON.stringify(data)};expires='${now.toUTCString()}';path=/;`
   }
 
   let data = getData(cryptoStr, vsCurrency)
