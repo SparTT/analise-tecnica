@@ -266,43 +266,58 @@ const MobileView = ({ marketData, setIsAdd, userData, isvisible, vsCurrency }) =
 export async function getServerSideProps(context) {
   const session = await getSession(context)
 
+  // change all of this later
+
   let isVisibleCookie = context.req.headers.cookie
 
+  // change this logic later
   if (typeof isVisibleCookie === 'undefined') isVisibleCookie = 'isVisible=true'
 
-  if (isVisibleCookie.search('isVisible') > -1 && typeof isVisibleCookie !== 'undefined') {
+  if (isVisibleCookie.search('isVisible') > -1) {
     isVisibleCookie = isVisibleCookie.split('isVisible=')[1]
     isVisibleCookie = isVisibleCookie.split(';')[0]
     console.log('isVisibleCookie', isVisibleCookie)
     isVisibleCookie = isVisibleCookie === 'false' ? false : true
   } else {
-    console.log('cookie não encontrado')
-    console.log(isVisibleCookie)
+    console.log('isVisibleCookie não encontrado')
     isVisibleCookie = true
   }
 
-  let userVal
-  if(session) {
+  let userVal = context.req.headers.cookie
+
+  // change this logic later
+  if (typeof userVal === 'undefined') userVal = '' 
+
+  if (userVal.search('userVal') > -1) {
+    userVal = userVal.split('userVal=')[1]
+    userVal = userVal.split(';')[0]
+    console.log('userVal found')
+  } else {
+    console.log('userVal não encontrado')
+    console.log(userVal)
+    userVal = null
+  }
+
+  if (session && userVal === null) {
     userVal = await fetch(`${process.env.API_BASE_URL}/api/user/get-user?&session_accessToken=${session.accessToken.sub}`)
     .then(resp => resp.json())
     .then(async resp => {
       if (resp.error) {
-        console(resp.error)
+        console.log(resp.error)
       } else {
+        console.log('had sess req')
         return resp
       }
     })
-  } else {
-    userVal = null
   }
-
-
 
   return {
     props: { session, isVisibleCookie, userVal }
   }
 
   // https://blog.logrocket.com/handling-data-fetching-next-js-useswr/ -- find mutate later to apply on updates realized
+  // reset git branch 
+  // abstract cookies to one function
 
 }
 
@@ -311,12 +326,13 @@ function getData(cryptoId, vs_currency) {
   let url = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=${vs_currency}&ids=${cryptoId}&order=market_cap_desc&per_page=100
   &page=1&sparkline=false&price_change_percentage=1h,24h,7d,30d,1y`
 
-  const { data } = useSWR(url, fetcher)
+  const { data } = useSWR(url, fetcher, { refreshInterval: 10000 })
   return data
 }
 
 const Profile = ({ session, isVisibleCookie, vsCurrency, setVsCurrency, userVal}) => {
 
+  if(typeof userVal === 'string') userVal = JSON.parse(userVal) 
 
   const [ userData, setUserData ] = useState(userVal);
   const [ isAdd, setIsAdd ] = useState(false);
@@ -372,6 +388,15 @@ const Profile = ({ session, isVisibleCookie, vsCurrency, setVsCurrency, userVal}
     }
   }
 
+  function setCookieUser() {
+
+    let now = new Date()
+    const time = now.getTime()
+    const expireTime = time + (1000 * 60) * 60 * 24 * 60
+    now.setTime(expireTime)
+    document.cookie = `userVal=${JSON.stringify(userData)};expires='${now.toUTCString()}';path=/;`
+  }
+
   let data = getData(cryptoStr, vsCurrency)
 
   if (typeof cryptoStr === 'undefined' || typeof vsCurrency === 'undefined') data = undefined
@@ -411,6 +436,7 @@ const Profile = ({ session, isVisibleCookie, vsCurrency, setVsCurrency, userVal}
     }
   }
   //console.log('account_total', account_total)
+  setCookieUser()
   
   return (
     <>
