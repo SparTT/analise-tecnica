@@ -349,6 +349,7 @@ const Profile = ({ session, isVisibleCookie, vsCurrency, setVsCurrency, userVal}
     }
     setCryptoStr(data.newString)
     console.log('new cryptoString', data.newString)
+    setCookieUser()
   }
 
   useEffect( async () => {
