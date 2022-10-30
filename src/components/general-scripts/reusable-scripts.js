@@ -34,21 +34,6 @@ export function formatCurrency(number, currency) {
 export function capitalize(string) {
   return string.charAt(0).toUpperCase() + string.slice(1);
 }
-
-export function getCurrentFiat() {
-  let vsFiat = document.cookie
-  if (vsFiat.search('vsCurrency') > -1) {
-    vsFiat = vsFiat.split('vsCurrency=')[1]
-    vsFiat = vsFiat.split(';')[0]
-    //console.log('vsFiat', vsFiat)
-  } else {
-    //console.log('cookie não encontrado')
-    vsFiat = 'brl'
-  }
-  return vsFiat
-}
-
-
 export function prepareMultCrypto(resp) {
 
   for(let i = 0; i < resp.length; i++) {

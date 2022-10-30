@@ -6,12 +6,8 @@ const { Pool } = require('pg');
 // https://next-auth.js.org/getting-started/example
 // https://github.com/nextauthjs
 
-// terminar isso
-
-const dbUrl = process.env.DATABASE_URL
-
 const pool = new Pool({
-  connectionString:  dbUrl, // process.env.DATABASE_URL
+  connectionString: process.env.DATABASE_URL, 
   ssl: {
     rejectUnauthorized: false
   }
@@ -24,7 +20,7 @@ async function validateUser(credentials) {
 
   const client = await pool.connect();
   // password = crypt( (%s), password )
-  //  crypt(%(password)s, gen_salt('bf'))
+  // crypt(%(password)s, gen_salt('bf'))
 
   const queryText = 'SELECT * FROM users WHERE name = $1'
   
@@ -32,13 +28,10 @@ async function validateUser(credentials) {
     text: queryText,
     values:  [ credentials.username ]
   }
-  
-
 
   const resp = await client.query(query)
 
-  console.log('rows', resp.rows)
-
+  //console.log('rows', resp.rows)
         
   client.release()
 
@@ -49,7 +42,6 @@ async function validateUser(credentials) {
   }
 
 }
-
 
 const providers = [
   Credentials({
@@ -68,7 +60,7 @@ const providers = [
 
       let user = await validateUser(credentials)
       
-      console.log('user', user)
+      //console.log('user', user)
 
       if(user === null) throw 'Usuário não encontrado'
 
@@ -87,15 +79,18 @@ const callbacks = {
   async jwt(data) {
 
     const { token, user } = data
+
+    //console.log('data', data)
     
     //console.log('jwt token', token)
-    /*
-    console.log('jwt user', user)
-
+    //console.log('jwt user', user)
+    
     if (user) {
-      token.accessToken = user.token
+      //token.accessToken = user.token
+      token.userData = user.cryptos
+      console.log('passei aq')
     }
-    */
+    
    
     return token
   },
@@ -103,7 +98,7 @@ const callbacks = {
   async session(data) {
     const { session, token } = data 
     //console.log('session sess', session)
-    //console.log('session token', token)
+    //console.log('session data', data)
     
     session.accessToken = token
     return session

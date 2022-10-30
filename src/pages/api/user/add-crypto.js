@@ -2,9 +2,8 @@ import { parse } from "dotenv";
 import { getSession } from "next-auth/react"
 const { Pool } = require('pg');
 
-const dbUrl = process.env.DATABASE_URL
 const pool = new Pool({
-  connectionString:  dbUrl, // process.env.DATABASE_URL
+  connectionString: process.env.DATABASE_URL,
   ssl: {
     rejectUnauthorized: false
   }

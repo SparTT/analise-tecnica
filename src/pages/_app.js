@@ -13,19 +13,20 @@ export default function MyApp({
 }) {
 
 
-  const [ vsCurrency, setVsCurrency ] = useState('brl')
+  //const [ vsCurrency, setVsCurrency ] = useState('brl')
 
   // fazer cryptoStr funcionar em dashboard
   // talvez mudar método de add, delete, etc de crypto
 
   // <div>CryptoStr {cryptoStr} {vsCurrency}</div>
 
+  //  <Header {...pageProps.session} vsCurrency={vsCurrency} setVsCurrency={setVsCurrency} />
+
   return (
   <SessionProvider session={pageProps.session}>
       <Head>
         <link rel="icon" href="/keyword-research.ico" />
       </Head>
-    <Header {...pageProps.session} vsCurrency={vsCurrency} setVsCurrency={setVsCurrency} />
-    <Component {...pageProps} vsCurrency={vsCurrency} setVsCurrency={setVsCurrency} />
+    <Component {...pageProps} />
   </SessionProvider>)
 }

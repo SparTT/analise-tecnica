@@ -8,8 +8,6 @@ import Modal from '../components/elements/modal'
 import useSWR from 'swr'
 
 let notVisible = '*****'
-//let cryptoString
-//let vsFiat
 
 const DesktopView = ({ marketData, setIsAdd, userData, isvisible, vsCurrency }) => {
   return (
@@ -283,58 +281,38 @@ export async function getServerSideProps(context) {
     isVisibleCookie = true
   }
 
-  let userVal = context.req.headers.cookie
+
+  let vsFiat = context.req.headers.cookie
 
   // change this logic later
-  if (typeof userVal === 'undefined') userVal = '' 
+  if (typeof vsFiat === 'undefined') vsFiat = ''
 
-  if (userVal.search('userVal') > -1) {
-    userVal = userVal.split('userVal=')[1]
-    userVal = userVal.split(';')[0]
-    console.log('userVal found')
+  if (vsFiat.search('vsCurrency') > -1) {
+    vsFiat = vsFiat.split('vsCurrency=')[1]
+    vsFiat = vsFiat.split(';')[0]
+    //console.log('vsFiat', vsFiat)
   } else {
-    console.log('userVal não encontrado')
-    console.log(userVal)
-    userVal = null
-  }
-
-  if (session && userVal === null) {
-    userVal = await fetch(`${process.env.API_BASE_URL}/api/user/get-user?&session_accessToken=${session.accessToken.sub}`)
-    .then(resp => resp.json())
-    .then(async resp => {
-      if (resp.error) {
-        console.log(resp.error)
-      } else {
-        console.log('had sess req')
-        return resp
-      }
-    })
+    //console.log('cookie não encontrado')
+    vsFiat = 'brl'
   }
 
   return {
-    props: { session, isVisibleCookie, userVal }
+    props: { session, isVisibleCookie, vsFiat }
   }
 
   // https://blog.logrocket.com/handling-data-fetching-next-js-useswr/ -- find mutate later to apply on updates realized
   // reset git branch 
   // abstract cookies to one function
+  // https://medium.com/javascript-dots/cache-api-in-javascript-644380391681
 
+  // https://tinloof.com/blog/using-next.js-and-vercel-to-instantly-load-a-data-heavy-website
 }
 
-function getData(cryptoId, vs_currency) {
-  
-  let url = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=${vs_currency}&ids=${cryptoId}&order=market_cap_desc&per_page=100
-  &page=1&sparkline=false&price_change_percentage=1h,24h,7d,30d,1y`
+const Content = ({ session, isVisibleCookie, vsCurrency}) => {
 
-  const { data } = useSWR(url, fetcher, { refreshInterval: 10000 })
-  return data
-}
+  //console.log(session.accessToken.userData)
 
-const Profile = ({ session, isVisibleCookie, vsCurrency, setVsCurrency, userVal}) => {
-
-  if(typeof userVal === 'string') userVal = JSON.parse(userVal) 
-
-  const [ userData, setUserData ] = useState(userVal);
+  const [ userData, setUserData ] = useState(null);
   const [ isAdd, setIsAdd ] = useState(false);
   const [ clientWidth, setClientWidth ] = useState(null);
   const [ isvisible, setisVisible ] = useState(isVisibleCookie)
@@ -348,23 +326,43 @@ const Profile = ({ session, isVisibleCookie, vsCurrency, setVsCurrency, userVal}
       newFiat: vsCurrency
     }
     setCryptoStr(data.newString)
-    console.log('new cryptoString', data.newString)
-    setCookieUser(userData)
+    //setCookieUser(userData)
+  }
+
+
+    
+  function getData(cryptoId, vs_currency) {
+    
+    let url = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=${vs_currency}&ids=${cryptoId}&order=market_cap_desc&per_page=100
+    &page=1&sparkline=false&price_change_percentage=1h,24h,7d,30d,1y`
+
+    const { data } = useSWR(url, fetcher, { refreshInterval: 10000 })
+    return data
   }
 
   useEffect( async () => {
-    
-    let vsFiat = getCurrentFiat()
-    setVsCurrency(vsFiat)
-
     if (session) {
       window.addEventListener('resize', () => {
-        let type = window.innerWidth > 799 ? 'desktop' : 'mobile'
+        let type = document.body.clientWidth > 799 ? 'desktop' : 'mobile'
         if (type !== clientWidth) setClientWidth(type)
       }) 
       
-      window.innerWidth > 799 ? setClientWidth('desktop') : setClientWidth('mobile')
+      document.body.clientWidth > 799 ? setClientWidth('desktop') : setClientWidth('mobile')
       
+      let userVal = await fetch('/api/user/get-user')
+      .then(resp => resp.json())
+      .then(async resp => {
+        if (resp.error) {
+          console.log(resp.error)
+        } else {
+          console.log('had sess req')
+          return resp
+        }
+      })
+      setUserData(userVal)
+      setCryptoStr(Object.keys(userVal).toString())
+      
+
       console.time('get-data')
     } else {
       signIn()
@@ -389,25 +387,12 @@ const Profile = ({ session, isVisibleCookie, vsCurrency, setVsCurrency, userVal}
     }
   }
 
-  function setCookieUser(data) {
-
-    if(!data) data = userData
-
-    let now = new Date()
-    const time = now.getTime()
-    const expireTime = time + (1000 * 60) * 60 * 24 * 60
-    now.setTime(expireTime)
-    document.cookie = `userVal=${JSON.stringify(data)};expires='${now.toUTCString()}';path=/;`
-  }
-
   let data = getData(cryptoStr, vsCurrency)
 
-  if (typeof cryptoStr === 'undefined' || typeof vsCurrency === 'undefined') data = undefined
+  // testar sem || typeof data === 'undefined'  em prod
+  if (cryptoStr === null || !data) return <div className="container">Carregando</div>
 
-  if (userData === null || !data || typeof data === 'undefined' ) return <div className="container">Carregando</div>
-
-
-  console.log(cryptoStr, data)
+  //console.log(cryptoStr, data)
 
   if (Object.keys(data).includes('status')) {
     console.log('status err', data.status)
@@ -439,13 +424,9 @@ const Profile = ({ session, isVisibleCookie, vsCurrency, setVsCurrency, userVal}
     }
   }
   //console.log('account_total', account_total)
-  setCookieUser()
   
   return (
     <>
-      <Head>
-        <title>Dashboard</title>
-      </Head>
       <Modal updateUserData={updateUserData} isAdd={isAdd} />
       <div className="container">
         
@@ -574,4 +555,19 @@ const Profile = ({ session, isVisibleCookie, vsCurrency, setVsCurrency, userVal}
   
 }
 
-export default Profile
+export default ({ session, isVisibleCookie, userVal, vsFiat }) => {
+
+  const [ vsCurrency, setVsCurrency ] = useState(vsFiat)
+
+  // botar load shimmer e pegar userVal no front?
+
+  return (
+    <>
+      <Head>
+        <title>Dashboard</title>
+      </Head>
+      <Header vsCurrency={vsCurrency} setVsCurrency={setVsCurrency} />
+      <Content vsCurrency={vsCurrency} session={session} isVisibleCookie={isVisibleCookie} userVal={userVal}  />
+    </>
+  )
+}

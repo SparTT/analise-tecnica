@@ -9,9 +9,7 @@ const Session = () => {
   //console.log('sess header',session, status)
 
   if(status === 'loading') return <a className='log-btn'></a>
-
-  //{session.user.name}
-
+  
   if (session) {
     return (
       <>
@@ -52,7 +50,7 @@ function setRezise() {
   + document.querySelector('.header-right select').clientHeight +
   + document.querySelector('#list-input').clientHeight + 2 + 15
 
-  const height = document.body.clientWidth < 500 
+  const height = document.body.clientWidth < 740 
   ? mobileCalc
   : calcDesktop
 
@@ -62,8 +60,6 @@ function setRezise() {
 
 const Header = ({ vsCurrency, setVsCurrency }) => {
 
-  //const [ searchVal, setSearchVal ] = useState(null);
-  
   function changeVsCurrency() {
     const value = document.querySelector('.currency-type').value
     let now = new Date()

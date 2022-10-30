@@ -1,9 +1,36 @@
 import { useSession, getSession, signIn } from "next-auth/react"
 import Head from 'next/head'
+import Header from "../components/elements/header"
 import useSWR from 'swr'
 import { formatCurrency, getCurrentFiat, fetcher, prepareMultCrypto } from '../components/general-scripts/reusable-scripts'
 import React, { useState, useEffect } from 'react';
 import styles from '../stylesheet/components/table.module.css'
+
+export async function getServerSideProps(context) {
+  
+  let vsFiat = context.req.headers.cookie
+
+  // change this logic later
+  if (typeof vsFiat === 'undefined') vsFiat = ''
+
+  if (vsFiat.search('vsCurrency') > -1) {
+    vsFiat = vsFiat.split('vsCurrency=')[1]
+    vsFiat = vsFiat.split(';')[0]
+    //console.log('vsFiat', vsFiat)
+  } else {
+    //console.log('cookie não encontrado')
+    vsFiat = 'brl'
+  }
+  
+  
+  //let bla = vsFiat
+
+  //console.log('bl', bla)
+
+  return {
+    props: { vsFiat }
+  }
+}
 
 function getData(cryptoId, vs_currency) {
   
@@ -13,18 +40,9 @@ function getData(cryptoId, vs_currency) {
   return data
 }
 
-function Main({ vsCurrency, setVsCurrency }) {
+function MainContent({ vsCurrency }) {
 
   const cryptoIds = 'bitcoin,ethereum,monero,smooth-love-potion,polygon,binancecoin,usd-coin,solana,polkadot,dogecoin,litecoin,gala,cardano,magic-internet-money'
-
-  useEffect(() => initializer(), [])
-
-  let vsFiat
-  const initializer = async () => {
-    vsFiat = getCurrentFiat()
-    setVsCurrency(vsFiat)
-    console.log('vsC', vsCurrency, vsFiat)
-  }
 
   const data = getData(cryptoIds, vsCurrency)
 
@@ -181,14 +199,18 @@ function Main({ vsCurrency, setVsCurrency }) {
 }
 
 
-export default function Home({ setCryptoStr, vsCurrency, setVsCurrency}) {
+export default function Home({ vsFiat }) {
+
+  const [ vsCurrency, setVsCurrency ] = useState(vsFiat)
+
   return (
     <>
       <Head>
         <title>Home</title>
       </Head>
+      <Header vsCurrency={vsCurrency} setVsCurrency={setVsCurrency} />
       <div className="container">
-        <Main setCryptoStr={setCryptoStr} vsCurrency={vsCurrency} setVsCurrency={setVsCurrency}  />
+        <MainContent vsCurrency={vsCurrency} setVsCurrency={setVsCurrency} vsFiat={vsFiat}  />
       </div>
     </>
     
