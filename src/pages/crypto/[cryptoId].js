@@ -1,14 +1,12 @@
 import { useRouter } from 'next/router'
 import styles from '../../stylesheet/pages/cryptos.module.css'
 import { useEffect } from 'react'
-import io from 'socket.io-client'
 import React, { useState, } from 'react';
-import Chart from '../../components/crypto/chart'
 import Header from '../../components/elements/header'
-import { formatCurrency, capitalize, getCurrentFiat } from '../../components/general-scripts/reusable-scripts'
+import { formatCurrency, capitalize, fetcher } from '../../components/general-scripts/reusable-scripts'
 import Head from 'next/head'
+import useSWR from 'swr'
 
-let socket
 
 // getServerSideProps
 export async function getServerSideProps(context) {
@@ -16,17 +14,26 @@ export async function getServerSideProps(context) {
   const crypto = context.params.cryptoId
   //const vs = context.query.vs // &vs=${vs}
   //const data = await fetch(`/api/crypto/get-crypto?id=${crypto}`).then(resp => resp.json())
-  let  data = [ null ]
-
   // ,{secure: true,    rejectUnauthorized: false}
 
 
+  let vsFiat = context.req.headers.cookie
+
+  // change this logic later
+  if (typeof vsFiat === 'undefined') vsFiat = ''
+
+  if (vsFiat.search('vsCurrency') > -1) {
+    vsFiat = vsFiat.split('vsCurrency=')[1]
+    vsFiat = vsFiat.split(';')[0]
+    //console.log('vsFiat', vsFiat)
+  } else {
+    //console.log('cookie não encontrado')
+    vsFiat = 'brl'
+  }
+
   // Pass data to the page via props
-  return { props: { data } }
+  return { props: { vsFiat } }
 }
-
-console.time('get-data')
-
 
 const CalculateQtd = ({ cryptoPrice, cryptoName, fiatPreference }) => {
 
@@ -136,68 +143,28 @@ const CalculateQtd = ({ cryptoPrice, cryptoName, fiatPreference }) => {
 }
 
 
-function Price({ name, vsCurrency, setVsCurrency }) {
+function Price({ cryptoName, vsCurrency }) {
   
-  let data = [ null ]
-  
-  const[ reactData, setReactData ] = useState(data[0]);
+  //const[ reactData, setReactData ] = useState(null);
 
-  useEffect(() => socketInitializer(name), [])
+  // useEffect(async () => {
 
-  
-  const socketInitializer = async (crypto) => {
+  // }, [])
 
-    let vsFiat = getCurrentFiat()
-    setVsCurrency(vsFiat)
-
-    await fetch('/api/crypto/crypto-socket').catch(err => console.log(err))
-    socket = io()
-  
-    socket.on('connect', msg => {
-      console.log('connected')
-
-
-      // repetido
-      let oldVal = vsFiat
-      document.querySelector('.currency-type').addEventListener('focus', () => {
-        //console.log('focus', document.querySelector('.currency-type').value)
-        oldVal = document.querySelector('.currency-type').value
-        if (document.activeElement != document.body) document.activeElement.blur();
-      })
-
-    })
-    
-    socket.emit('single-crypto', crypto);
-
-    
-    socket.on('connect_error', async (reason) => {
-      console.log(`connect_error status: ${window.navigator.onLine} ${reason}`)
-      if (window.navigator.onLine === true) {
-        // user ok mas server not ok
-        socket.disconnect()
-        await socketInitializer()
-        //window.location.reload()
-      } 
-    })
-
-
-    socket.on('data', res => {
-      //if(!res.error)  res = res[0]
-
-      setReactData(res)
-      console.timeEnd('get-data')
-    })
-
-    socket.on('update', res => {
-     setReactData(res)
-    })
+  function getData(id, vs_currency) {
+    let url = `https://api.coingecko.com/api/v3/coins/${id}`
+    const { data } = useSWR(url, fetcher, { refreshInterval: 10000 })
+    return data
   }
 
-  if(reactData === null) return <div>Carregando</div>
 
-  //console.log('data', reactData)
+  let data = getData(cryptoName, vsCurrency)
+  console.log(cryptoName, vsCurrency)
+  //setReactData(data)
 
-  data = reactData
+  if(!data) return <div>Carregando</div>
+
+  console.log('data', data)
 
   if(typeof data.image.small === 'undefined') console.log(data)
 
@@ -229,21 +196,23 @@ function Price({ name, vsCurrency, setVsCurrency }) {
 }
 
 
-const Crypto = ({ data, vsCurrency, setVsCurrency }) => {
+const Crypto = ({ vsFiat }) => {
 
   const mainRouter = useRouter()
 
   const { cryptoId } = mainRouter.query
+  const [ vsCurrency, setVsCurrency ] = useState(vsFiat)
 
-  console.log('r', vsCurrency)
+  console.log(cryptoId, vsCurrency)
 
   return (
     <>
       <Head>
         <title>{capitalize(cryptoId)} price</title>
       </Head>
+      <Header vsCurrency={vsCurrency} setVsCurrency={setVsCurrency} />
       <div className={styles.container}> 
-        <Price name={cryptoId} vsCurrency={vsCurrency} setVsCurrency={setVsCurrency} />
+        <Price cryptoName={cryptoId} vsCurrency={vsCurrency}/>
       </div>
     </>
   )
