@@ -326,15 +326,14 @@ const Content = ({ session, isVisibleCookie, vsCurrency}) => {
       newFiat: vsCurrency
     }
     setCryptoStr(data.newString)
-    //setCookieUser(userData)
   }
 
 
     
   function getData(cryptoId, vs_currency) {
     
-    let url = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=${vs_currency}&ids=${cryptoId}&order=market_cap_desc&per_page=100
-    &page=1&sparkline=false&price_change_percentage=1h,24h,7d,30d,1y`
+    let url = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=${vs_currency}&ids=${cryptoId}&order=market_cap_desc&per_page=100`
+    url += `&page=1&sparkline=false&price_change_percentage=1h,24h,7d,30d,1y`
 
     const { data } = useSWR(url, fetcher, { refreshInterval: 10000 })
     return data

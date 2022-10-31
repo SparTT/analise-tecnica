@@ -145,13 +145,7 @@ const CalculateQtd = ({ cryptoPrice, cryptoName, fiatPreference }) => {
 
 function Price({ cryptoName, vsCurrency }) {
   
-  //const[ reactData, setReactData ] = useState(null);
-
-  // useEffect(async () => {
-
-  // }, [])
-
-  function getData(id, vs_currency) {
+  function getData(id) {
     let url = `https://api.coingecko.com/api/v3/coins/${id}`
     const { data } = useSWR(url, fetcher, { refreshInterval: 10000 })
     return data
@@ -160,8 +154,7 @@ function Price({ cryptoName, vsCurrency }) {
 
   let data = getData(cryptoName, vsCurrency)
   console.log(cryptoName, vsCurrency)
-  //setReactData(data)
-
+  
   if(!data) return <div>Carregando</div>
 
   console.log('data', data)
