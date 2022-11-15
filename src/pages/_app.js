@@ -1,9 +1,7 @@
 import { SessionProvider } from "next-auth/react"
 import Head from "next/head"
 import '../stylesheet/global.css'
-import Header from '../components/elements/header'
-import { useState, useEffect } from "react"
-import { getCurrentFiat } from "../components/general-scripts/reusable-scripts"
+import { Analytics } from '@vercel/analytics/react';
 
 
 // dividir isso p/ pages especificas
@@ -24,9 +22,10 @@ export default function MyApp({
 
   return (
   <SessionProvider session={pageProps.session}>
-      <Head>
-        <link rel="icon" href="/keyword-research.ico" />
-      </Head>
+    <Analytics />
+    <Head>
+      <link rel="icon" href="/keyword-research.ico" />
+    </Head>
     <Component {...pageProps} />
   </SessionProvider>)
 }
