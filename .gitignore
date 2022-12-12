@@ -8,6 +8,7 @@
 #me
 exe.bat
 .env
+src/classes/db-scripts/mongodb-scripts.js
 
 # testing
 /coverage

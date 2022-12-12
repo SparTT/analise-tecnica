@@ -1,45 +1,35 @@
 import NextAuth from "next-auth"
 import Credentials from 'next-auth/providers/credentials'
 import { user } from "pg/lib/defaults";
-const { Pool } = require('pg');
+const ObjectId = require('mongodb').ObjectId;
+
+
+const { MongoClient } = require("mongodb");
 
 // https://next-auth.js.org/getting-started/example
 // https://github.com/nextauthjs
 
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL, 
-  ssl: {
-    rejectUnauthorized: false
-  }
-});
 
 async function validateUser(credentials) {
 
 
   console.log('validando user')
 
-  const client = await pool.connect();
-  // password = crypt( (%s), password )
-  // crypt(%(password)s, gen_salt('bf'))
 
-  const queryText = 'SELECT * FROM users WHERE name = $1'
-  
-  const query = {
-    text: queryText,
-    values:  [ credentials.username ]
-  }
+  const dbName = "users";
+  const client = new MongoClient(process.env.DATABASE_URL);
 
-  const resp = await client.query(query)
+  const db = client.db(dbName);
+
+  const col = db.collection("data");
+
+  const resp = await col.findOne({username: credentials.username});
 
   //console.log('rows', resp.rows)
         
-  client.release()
+  await client.close();
 
-  if(resp.rows.length > 0) {
-    return resp.rows[0]
-  } else {
-    return null
-  }
+  return resp
 
 }
 
@@ -87,6 +77,8 @@ const callbacks = {
     
     if (user) {
       //token.accessToken = user.token
+      token.username = user.username
+      token.id = user._id
       token.userData = user.cryptos
       console.log('passei aq')
     }
@@ -101,6 +93,8 @@ const callbacks = {
     //console.log('session data', data)
     
     session.accessToken = token
+    session.accessToken.username = token.username
+    session.accessToken.id = new ObjectId(token.id)
     return session
   }
 

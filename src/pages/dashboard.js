@@ -10,6 +10,8 @@ import useSWR from 'swr'
 let notVisible = '*****'
 
 const DesktopView = ({ marketData, setIsAdd, userData, isvisible, vsCurrency }) => {
+
+
   return (
     <>
      <div className={styles.table}>
@@ -310,7 +312,8 @@ export async function getServerSideProps(context) {
 
 const Content = ({ session, isVisibleCookie, vsCurrency}) => {
 
-  //console.log(session.accessToken.userData)
+
+  //console.log(session)
 
   const [ userData, setUserData ] = useState(null);
   const [ isAdd, setIsAdd ] = useState(false);
@@ -339,7 +342,7 @@ const Content = ({ session, isVisibleCookie, vsCurrency}) => {
     return data
   }
 
-  useEffect( async () => {
+  useEffect( () => {
     if (session) {
       window.addEventListener('resize', () => {
         let type = document.body.clientWidth > 799 ? 'desktop' : 'mobile'
@@ -347,20 +350,25 @@ const Content = ({ session, isVisibleCookie, vsCurrency}) => {
       }) 
       
       document.body.clientWidth > 799 ? setClientWidth('desktop') : setClientWidth('mobile')
-      
-      let userVal = await fetch('/api/user/get-user')
-      .then(resp => resp.json())
-      .then(async resp => {
-        if (resp.error) {
-          console.log(resp.error)
-        } else {
-          console.log('had sess req')
-          return resp
-        }
-      })
-      setUserData(userVal)
-      setCryptoStr(Object.keys(userVal).toString())
-      
+
+      async function fetchUserData() {
+              
+        let userVal = await fetch('/api/user/get-user')
+          .then(resp => resp.json())
+          .then(async resp => {
+            if (resp === null) {
+              console.log('erro ao carregar os dados')
+              return null
+            } else {
+              console.log('had sess req')
+              return resp
+            }
+          })
+          setUserData(userVal)
+          setCryptoStr(Object.keys(userVal).toString())
+      }
+      fetchUserData()
+
 
       console.time('get-data')
     } else {
@@ -389,9 +397,8 @@ const Content = ({ session, isVisibleCookie, vsCurrency}) => {
   let data = getData(cryptoStr, vsCurrency)
 
   // testar sem || typeof data === 'undefined'  em prod
-  if (cryptoStr === null || !data) return <div className="container">Carregando</div>
 
-  //console.log(cryptoStr, data)
+  if (cryptoStr === null || !data) return <div className="container">Carregando</div>
 
   if (Object.keys(data).includes('status')) {
     console.log('status err', data.status)
@@ -422,15 +429,16 @@ const Content = ({ session, isVisibleCookie, vsCurrency}) => {
 
     }
   }
-  //console.log('account_total', account_total)
-  
+
+  //return account_total
+
   return (
     <>
       <Modal updateUserData={updateUserData} isAdd={isAdd} />
       <div className="container">
         
         <main className={styles.main}>
-          <h1 className={styles.title}>Olá, {session.user.name}</h1>
+          <h1 className={styles.title}>Olá, {session.user.name.first}</h1>
           <h2 className="user-total-amount">
             Total em conta: <span>{ isvisible === true ? formatCurrency(account_total, vsCurrency): notVisible }</span>
           </h2>
@@ -559,6 +567,8 @@ export default ({ session, isVisibleCookie, userVal, vsFiat }) => {
   const [ vsCurrency, setVsCurrency ] = useState(vsFiat)
 
   // botar load shimmer e pegar userVal no front?
+
+  // terminar add-crypto
 
   return (
     <>

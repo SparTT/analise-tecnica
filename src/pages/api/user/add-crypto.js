@@ -1,19 +1,13 @@
 import { parse } from "dotenv";
 import { getSession } from "next-auth/react"
-const { Pool } = require('pg');
+import { user } from "pg/lib/defaults";
 
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: {
-    rejectUnauthorized: false
-  }
-});
+const { MongoClient } = require("mongodb");
 
 export default async function handler (req, res) {
 
   const session = await getSession({ req })
-  const id = session.accessToken.sub
-
+  const username = session.accessToken.username
 
   const parsedHeader = JSON.parse(req.headers.data)
 
@@ -30,44 +24,20 @@ export default async function handler (req, res) {
     return res.status(500).json({error: findCrypto})
   }
 
-  const client = await pool.connect();
-
-  let queryText = `
-    UPDATE users
-    set cryptos = jsonb_insert(cryptos, $1, $2)
-    WHERE users.id = $3 RETURNING cryptos;
-  `
-  
-
-  const data = {
-    total_spent: total_spent,
+  let data = {
     qtd: qtd,
-    currency_spent: 'brl'
+    total_spent: total_spent,
+    currency_spent: 'brl' // dynamic later
   }
-
-
-  const sendData = {
-    text: queryText,
-    values: [`{${name}}`, data, id]
-  }
-
-  //console.log(data, id)
-
-  try {
-    const query = await client.query(sendData)
-    res.status(200).json(query.rows[0].cryptos)
-  } catch(e) {
-    let err = e
-    err.msg = 'Erro ao adicionar crypto'
-    if(e.code === '22023') err.msg = 'Esse valor já foi adicionado'
-
-    console.log(err)
-    res.status(500).json({error: err})
-  } finally {
-    client.release();
-  }
-
-
-  //let query = await client.query('SELECT * FROM users')
   
+  const client = new MongoClient(process.env.DATABASE_URL)
+
+  const db = client.db('users')
+  const col = db.collection("data")
+  // const result = await col.replaceOne({ username: username }, cryptos);  
+
+  const result = await col.findOneAndUpdate({ username: username }, { $set: { ["cryptos." + name]:  data } }, { returnDocument: 'after' });  
+
+  return res.status(200).json(result.value.cryptos)
+
 }

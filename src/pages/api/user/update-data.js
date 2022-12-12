@@ -1,17 +1,11 @@
 import { getSession } from "next-auth/react"
-const { Pool } = require('pg');
 
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: {
-    rejectUnauthorized: false
-  }
-});
+const { MongoClient } = require("mongodb");
 
 export default async function handler (req, res) {
 
   const session = await getSession({ req })
-  const id = session.accessToken.sub
+  const username = session.accessToken.username
 
 
   const parsedHeader = JSON.parse(req.headers.data)
@@ -20,7 +14,7 @@ export default async function handler (req, res) {
 
   //res.status(200).json('ok')
 
-  const client = await pool.connect();
+  //const client = await pool.connect();
 
   let queryText = `
   UPDATE users
@@ -30,21 +24,22 @@ export default async function handler (req, res) {
 
   const data = {
     total_spent: total_spent,
-    qtd: qtd
+    qtd: qtd,
+    currency_spent: 'brl'
   }
 
+    
+  const client = new MongoClient(process.env.DATABASE_URL);
 
-  const sendData = {
-    text: queryText,
-    values: [`{${name}}`, name, data, id]
-  }
+  const db = client.db('users');
+  const col = db.collection("data");
 
-  //console.log(data, id)
+  const result = await col.findOneAndUpdate({ username: username }, { $set: { ["cryptos." + name]:  data } }, { returnDocument: 'after' });  
 
-  const query = await client.query(sendData)
+  return res.status(200).json(result.value.cryptos)
 
-  res.status(200).json(query.rows[0].cryptos)
-  client.release();
+  //res.status(200).json(query.rows[0].cryptos)
+  //client.release();
 
 
   //let query = await client.query('SELECT * FROM users')
