@@ -217,6 +217,7 @@ const MobileView = ({ marketData, setIsAdd, userData, isvisible, vsCurrency }) =
               .col-1 {
                 grid-area: name;
                 margin-left: 5px;
+                text-align: center;
               }
 
               .col-2 {
@@ -308,6 +309,8 @@ export async function getServerSideProps(context) {
   // https://medium.com/javascript-dots/cache-api-in-javascript-644380391681
 
   // https://tinloof.com/blog/using-next.js-and-vercel-to-instantly-load-a-data-heavy-website
+
+  // do not close modal if error happens on add-crypto
 }
 
 const Content = ({ session, isVisibleCookie, vsCurrency}) => {
