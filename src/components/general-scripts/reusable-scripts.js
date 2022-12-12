@@ -49,3 +49,23 @@ export function prepareMultCrypto(resp) {
 
   return resp
 }
+
+export function getCookie(cookie, param, defaultReturn) { 
+
+  let res
+
+  if (typeof cookie === 'undefined') return defaultReturn
+
+  if (cookie.search(param) > -1) {
+    res = cookie.split(`${param}=`)[1]
+    res = res.split(';')[0]
+    console.log(param, res)
+    //res = res === 'false' ? false : true
+  } else {
+    console.log(param, 'não encontrado')
+    res = defaultReturn
+  }
+
+  return res
+
+}

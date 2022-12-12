@@ -2,7 +2,7 @@ import { useSession, getSession, signIn } from "next-auth/react"
 import Header from "../components/elements/header"
 import React, { useState, useEffect } from 'react';
 import styles from '../stylesheet/components/table.module.css'
-import { formatCurrency, getCurrentFiat, fetcher, prepareMultCrypto } from '../components/general-scripts/reusable-scripts'
+import { formatCurrency, getCookie, fetcher, prepareMultCrypto } from '../components/general-scripts/reusable-scripts'
 import Head from 'next/head'
 import Modal from '../components/elements/modal'
 import useSWR from 'swr'
@@ -265,42 +265,16 @@ const MobileView = ({ marketData, setIsAdd, userData, isvisible, vsCurrency }) =
 
 
 export async function getServerSideProps(context) {
+  
   const session = await getSession(context)
+  const cookieHeader = context.req.headers.cookie
 
-  // change all of this later
-
-  let isVisibleCookie = context.req.headers.cookie
-
-  // change this logic later
-  if (typeof isVisibleCookie === 'undefined') isVisibleCookie = 'isVisible=true'
-
-  if (isVisibleCookie.search('isVisible') > -1) {
-    isVisibleCookie = isVisibleCookie.split('isVisible=')[1]
-    isVisibleCookie = isVisibleCookie.split(';')[0]
-    console.log('isVisibleCookie', isVisibleCookie)
-    isVisibleCookie = isVisibleCookie === 'false' ? false : true
-  } else {
-    console.log('isVisibleCookie não encontrado')
-    isVisibleCookie = true
-  }
-
-
-  let vsFiat = context.req.headers.cookie
-
-  // change this logic later
-  if (typeof vsFiat === 'undefined') vsFiat = ''
-
-  if (vsFiat.search('vsCurrency') > -1) {
-    vsFiat = vsFiat.split('vsCurrency=')[1]
-    vsFiat = vsFiat.split(';')[0]
-    //console.log('vsFiat', vsFiat)
-  } else {
-    //console.log('cookie não encontrado')
-    vsFiat = 'brl'
-  }
+  let isVisible = getCookie(cookieHeader, 'isVisible', true)
+  isVisible = isVisible === 'false' ? false : true
+  let vsFiat = getCookie(cookieHeader, 'vsCurrency', 'brl')
 
   return {
-    props: { session, isVisibleCookie, vsFiat }
+    props: { session, isVisible, vsFiat }
   }
 
   // https://blog.logrocket.com/handling-data-fetching-next-js-useswr/ -- find mutate later to apply on updates realized
@@ -313,7 +287,7 @@ export async function getServerSideProps(context) {
   // do not close modal if error happens on add-crypto
 }
 
-const Content = ({ session, isVisibleCookie, vsCurrency}) => {
+const Content = ({ session, isVisible, vsCurrency}) => {
 
 
   //console.log(session)
@@ -321,7 +295,7 @@ const Content = ({ session, isVisibleCookie, vsCurrency}) => {
   const [ userData, setUserData ] = useState(null);
   const [ isAdd, setIsAdd ] = useState(false);
   const [ clientWidth, setClientWidth ] = useState(null);
-  const [ isvisible, setisVisible ] = useState(isVisibleCookie)
+  const [ isvisible, setisVisible ] = useState(isVisible)
   const [ cryptoStr, setCryptoStr ] = useState(userData !== null ? Object.keys(userData).toString() : null)
 
   function updateUserData(userData) {
@@ -565,13 +539,11 @@ const Content = ({ session, isVisibleCookie, vsCurrency}) => {
   
 }
 
-export default ({ session, isVisibleCookie, userVal, vsFiat }) => {
+export default ({ session, isVisible, userVal, vsFiat }) => {
 
   const [ vsCurrency, setVsCurrency ] = useState(vsFiat)
 
-  // botar load shimmer e pegar userVal no front?
-
-  // terminar add-crypto
+  // botar load shimmer
 
   return (
     <>
@@ -579,7 +551,7 @@ export default ({ session, isVisibleCookie, userVal, vsFiat }) => {
         <title>Dashboard</title>
       </Head>
       <Header vsCurrency={vsCurrency} setVsCurrency={setVsCurrency} />
-      <Content vsCurrency={vsCurrency} session={session} isVisibleCookie={isVisibleCookie} userVal={userVal}  />
+      <Content vsCurrency={vsCurrency} session={session} isVisible={isVisible} userVal={userVal}  />
     </>
   )
 }

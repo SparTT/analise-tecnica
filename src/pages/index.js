@@ -2,30 +2,15 @@ import { useSession, getSession, signIn } from "next-auth/react"
 import Head from 'next/head'
 import Header from "../components/elements/header"
 import useSWR from 'swr'
-import { formatCurrency, getCurrentFiat, fetcher, prepareMultCrypto } from '../components/general-scripts/reusable-scripts'
+import { formatCurrency, getCookie, fetcher, prepareMultCrypto } from '../components/general-scripts/reusable-scripts'
 import React, { useState, useEffect } from 'react';
 import styles from '../stylesheet/components/table.module.css'
 
 export async function getServerSideProps(context) {
-  
-  let vsFiat = context.req.headers.cookie
 
-  // change this logic later
-  if (typeof vsFiat === 'undefined') vsFiat = ''
-
-  if (vsFiat.search('vsCurrency') > -1) {
-    vsFiat = vsFiat.split('vsCurrency=')[1]
-    vsFiat = vsFiat.split(';')[0]
-    //console.log('vsFiat', vsFiat)
-  } else {
-    //console.log('cookie não encontrado')
-    vsFiat = 'brl'
-  }
+  const cookieHeader = context.req.headers.cookie
   
-  
-  //let bla = vsFiat
-
-  //console.log('bl', bla)
+  let vsFiat = getCookie(cookieHeader, 'vsCurrency', 'brl')
 
   return {
     props: { vsFiat }
