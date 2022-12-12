@@ -21,7 +21,6 @@ export default async (req, res) => {
   if(query === null) {
     res.status(404).json(query)
   } else {
-    console.log(query)
     query = query.cryptos
     res.status(200).json(query)
   }
