@@ -1,10 +1,10 @@
 import { getSession } from "next-auth/react"
-const { MongoClient } = require("mongodb");
+const { MongoClient, ObjectId } = require("mongodb");
 
 export default async function handler (req, res) {
 
   const session = await getSession({ req })
-  const username = session.accessToken.username
+  const id = session.accessToken.id
 
 
   const parsedHeader = JSON.parse(req.headers.data)
@@ -17,7 +17,7 @@ export default async function handler (req, res) {
   const db = client.db('users')
   const col = db.collection("data")
 
-  const result = await col.findOneAndUpdate({ username: username }, { $unset: { ["cryptos." + name]:  1 } }, { returnDocument: 'after' });  
+  const result = await col.findOneAndUpdate({ _id: new ObjectId(id) }, { $unset: { ["cryptos." + name]:  1 } }, { returnDocument: 'after' });  
 
   return res.status(200).json(result.value.cryptos)
 

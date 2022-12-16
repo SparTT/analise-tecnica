@@ -69,3 +69,35 @@ export function getCookie(cookie, param, defaultReturn) {
   return res
 
 }
+
+export function formatStrDate(dia, usaHoras) {
+    
+  if(dia === null) return null
+
+  let day, month, year
+  day = dia.getDate()
+  month = dia.getMonth() + 1
+  year = dia.getFullYear()
+
+  day = day < 10 ? '0' + day : day
+  month = month < 10 ? '0' + month : month
+
+  let specificTiming = ''
+  if (usaHoras) {
+    let hour, min, sec
+
+    hour = dia.getHours()
+    min = dia.getMinutes()
+    sec = dia.getSeconds()
+
+    hour = hour < 10 ? '0' + hour : hour
+    min = min < 10 ? '0' + min : min
+    sec = sec < 10 ? '0' + sec : sec
+
+    specificTiming = ` - ${hour}:${min}:${sec}`
+
+  }
+    
+  return `${day}/${month}/${year}${specificTiming}`
+
+}

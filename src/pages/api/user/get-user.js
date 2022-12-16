@@ -1,6 +1,6 @@
 import { getSession } from "next-auth/react"
 
-const { MongoClient } = require("mongodb");
+const { MongoClient, ObjectId } = require("mongodb");
 
 export default async (req, res) => {
   const session = await getSession({ req })
@@ -15,8 +15,8 @@ export default async (req, res) => {
 
   //console.log(session.accessToken)
 
-  let query = await col.findOne({username: session.accessToken.username})
-  //let query = await col.findOne({_id: session.accessToken.id})
+  //let query = await col.findOne({username: session.accessToken.username})
+  let query = await col.findOne({_id: ObjectId(session.accessToken.id)})
   //console.log('query', query.rows)
   if(query === null) {
     res.status(404).json(query)
