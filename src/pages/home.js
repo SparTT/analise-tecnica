@@ -1,14 +1,28 @@
 import { useSession, getSession, signIn } from "next-auth/react"
 import Head from 'next/head'
 import Header from "../components/elements/header"
-import useSWR from 'swr'
-import { formatCurrency, getCurrentFiat, fetcher, prepareMultCrypto } from '../components/general-scripts/reusable-scripts'
 import React, { useState, useEffect } from 'react';
-import styles from '../stylesheet/components/table.module.css'
-import desktopTable from "../components/elements/desktop-table"
+import { Chart } from "../components/crypto/chart"
+import { getCookie, fetcher, prepareMultCrypto } from '../components/general-scripts/reusable-scripts'
 
 
-export default function Home({ vsFiat }) {
+
+
+export async function getServerSideProps(context) {
+  
+  const session = await getSession(context)
+  const cookieHeader = context.req.headers.cookie
+
+  let vsFiat = getCookie(cookieHeader, 'vsCurrency', 'brl')
+
+  return {
+    props: { session, vsFiat }
+  }
+
+}
+
+
+export default function Home({ vsFiat, session }) {
 
   const [ vsCurrency, setVsCurrency ] = useState(vsFiat)
 
@@ -19,7 +33,7 @@ export default function Home({ vsFiat }) {
       </Head>
       <Header vsCurrency={vsCurrency} setVsCurrency={setVsCurrency} />
       <div className="container">
-        <desktopTable />
+        <Chart session={session} vsCurrency={vsCurrency} />
       </div>
     </>
     

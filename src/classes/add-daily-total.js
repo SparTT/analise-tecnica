@@ -76,10 +76,12 @@ async function run() {
     let finalData = fullData
 
     console.log(finalData)
+
+    //console.log(finalData)
     let insert = await db.collection('historic-total').findOneAndUpdate({ username: val.username }, { $set: { [strData]:  finalData } }, { returnDocument: 'after' });
     if(insert.value === null) {
       finalData = {
-        _id: ObjectId(val._id),
+        id: ObjectId(val._id),
         username: val.username,
         [strData]: fullData
       }
@@ -88,6 +90,61 @@ async function run() {
     } else {
       console.log(insert.value)
     }
+
+    let dailyData = {
+      brl: {
+        total: fullData.brl.total_price
+      },
+      usd: {
+        total: fullData.usd.total_price
+      },
+      day: strData
+    }
+
+    
+    insert = await db.collection('daily-total').findOneAndUpdate({ username: val.username }, { $set: { [strData]:  dailyData } }, { returnDocument: 'after' });
+    if(insert.value === null) {
+      finalData = {
+        id: ObjectId(val._id),
+        username: val.username,
+        [strData]: dailyData
+      }
+      insert = await db.collection('daily-total').insertOne(finalData);
+      console.log('insert done?', insert.acknowledged)
+    } else {
+      console.log(insert.value)
+    }
+    
+
+    /*
+    for(let i = 10; i < 16; i++) {
+
+      let strData2 = `2022/12/${i}`
+
+      dailyData.brl.total = dailyData.brl.total - (i * 100)
+      dailyData.usd.total = dailyData.usd.total - (i * 10)
+
+      dailyData.day = strData2
+
+      console.log('t', dailyData.brl.total)
+
+      insert = await db.collection('daily-total').findOneAndUpdate({ username: val.username }, { $set: { [strData2]:  dailyData } }, { returnDocument: 'after' });
+      if(insert.value === null) {
+        finalData = {
+          id: ObjectId(val._id),
+          username: val.username,
+          [strData2]: dailyData
+        }
+        insert = await db.collection('daily-total').insertOne(finalData);
+        console.log('insert done?', insert.acknowledged)
+      } else {
+        //console.log(insert.value)
+        console.log('ok')
+      }
+    }
+    */
+    
+
   }
   await client.close();
 
@@ -111,7 +168,10 @@ function createData(allData, cryptos) {
     data.median_24h = medianPrice
     data.user_value = medianPrice * cryptos[coin.id].qtd
     data.lastUpdated = coin.last_updated
-    res.total_price += medianPrice
+    res.total_price += data.user_value
+
+    console.log('t', res.total_price)
+
   }
 
   res.total_price = Number(res.total_price.toFixed(2))

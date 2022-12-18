@@ -1,95 +1,82 @@
-import { useEffect } from 'react'
-import React, { useState } from 'react';
-import { Children } from 'react/cjs/react.production.min';
-import { Line } from 'react-chartjs-2';
-import { Chart as ChartJS } from 'chart.js/auto'
-import { Chart } from 'react-chartjs-2'
-
-import { Config } from '../ChartConfig';
-//import marketChart from '../../pages/api/crypto/market-chart'
+import React, { useState, useEffect } from 'react';
+import ReactEcharts from 'echarts-for-react';
+import { signIn } from "next-auth/react"
 
 
-// https://www.learnnext.blog/blogs/using-chartjs-in-your-nextjs-application
-//https://medium.com/analytics-vidhya/how-to-make-interactive-line-chart-in-d3-js-4c5f2e6c0508
-
-function formatDate(date) {
-  let dd = date.getDate();
-  let mm = date.getMonth() + 1;
-  let hh = date.getHours()//-3
-  let min = date.getMinutes()
-  let ss = date.getSeconds()
-  
-  let yyyy = date.getFullYear();
-  dd = dd < 10 ? '0' + dd : dd 
-  mm = mm < 10 ? '0' + mm : mm 
-  
-  hh = hh < 10 ? '0' + hh : hh 
-  min = min < 10 ? '0' + min : min 
-  ss = ss < 10 ? '0' + ss : ss 
-
-  //let res = `${dd}/${mm}/${yyyy} ${hh}:${min}:${ss}`;
-  let res = `${hh}:${min}`;
-  return res
+function roundToNearestNumber(num, rounder) {
+  return Math.round(num / rounder) * rounder;
 }
 
+export function Chart({session, vsCurrency}) {
 
-const CryptoChart = ({ name, vs_currency }) => {
-  
+  const [ userData, setUserData ] = useState(null);
 
-  const[ reactData, setReactData ] = useState(null);
-  
-  useEffect(async () => {
-    //let res = await marketChart({query: {id: name, vs_currency: vs_currency}})
+  useEffect( () => {
+    if (session) {
+      async function fetchUserData() {
+              
+        let userVal = await fetch('/api/user/daily-value')
+          .then(resp => resp.json())
+          .then(async resp => {
+            if (resp === null) {
+              console.log('erro ao carregar os dados')
+              return null
+            } else {
+              console.log('had sess req')
+              return resp
+            }
+          })
+          setUserData(userVal)
+      }
+      fetchUserData()
 
-    console.log('vs', vs_currency)
-    const res = await fetch(`/api/crypto/market-chart?id=${name}&vs_currency=${vs_currency}`).then(resp => resp.json())
-    console.log(res)
-    setReactData(res)
-   }, [])
 
-  if(reactData === null) return <div>Carregando</div>
-
-  //console.log(reactData.prices)
-  // maybe create a 404 template?
-  //if(reactData.error) return <div>{reactData.status} {reactData.error}</div>
-
-  let prices = reactData.prices
-  const label = prices.map(el => {
+      console.time('get-data')
+    } else {
+      signIn()
+    }
     
-    let res = el[0]
-    res = new Date(res)
-    res = formatDate(res)
-    return res
-  }) // x
-  const data = prices.map(el => el[1]) // y
+  }, [])
 
-  const chartData = {
-    labels: label,
-    datasets: [{
-      label: name,
-      data: data,
-      fill: false,
-      borderColor: ' #0052ff',
-      tension: 0.1,
-      // partially transparent part below our line graph
-      backgroundColor: 'rgba(59, 130, 246, 0.2)',
-      borderWidth: 3,
-      borderCapStyle: 'butt',
-      //pointRadius: props.pointRadius,
-      pointHoverRadius: 7,
-      pointHoverBackgroundColor: 'rgba(59, 130, 246, 1)',
-      pointHoverBorderColor: 'rgba(59, 130, 246, 1)',
-      pointHoverBorderWidth: 2
-    }]
-  }
+  if (!userData) return <div className="container">Carregando</div>
 
+  console.log(userData)
+
+  let xArr = Object.values(userData).map((el) => el.day)
+  //console.log(xArr)
+  let userValue = Object.values(userData).map((el) => el[vsCurrency].total)
+  //console.log(userValue)
+
+  let smallestVal = Math.min.apply(null, userValue) * 0.99
+  console.log(smallestVal)
+
+  smallestVal = roundToNearestNumber(smallestVal, 500)
+  //highestVal = roundNearest100(highestVal)
 
   return (
-    <div>
-      <Line data={chartData} options={Config}/>
-    </div>
-  )
-
+    <>
+    <h2>Daily Price</h2>
+    <ReactEcharts
+      option={{
+        xAxis: {
+          type: 'category',
+          data: xArr
+        },
+        yAxis: {
+          type: 'value',
+          min: smallestVal,
+          //max: highestVal
+        },
+        tooltip: {
+          trigger: 'axis'
+        },
+        series: [{ 
+          data: userValue,
+          type: 'line'
+        }]
+      }}
+    />
+    </>
+  );
 }
-
-export default CryptoChart
+export default Chart;

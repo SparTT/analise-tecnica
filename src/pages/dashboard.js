@@ -7,6 +7,8 @@ import Head from 'next/head'
 import Modal from '../components/elements/modal'
 import useSWR from 'swr'
 
+import Chart from "../components/crypto/chart";
+
 let notVisible = '*****'
 
 const DesktopView = ({ marketData, setIsAdd, userData, isvisible, vsCurrency }) => {
@@ -16,11 +18,11 @@ const DesktopView = ({ marketData, setIsAdd, userData, isvisible, vsCurrency }) 
     <>
      <div className={styles.table}>
         <div className={`${styles['table-head']} ${'table-head'}`}>
-          <div className='col-1'>Nome</div>
+          <div className='col-1'>Name</div>
           <div className='col-2'>Qtd</div>
           <div className='col-3'>24h</div>
-          <div className='col-4'>Custo</div>
-          <div className='col-5'>Preço</div>
+          <div className='col-4'>Cost</div>
+          <div className='col-5'>Price</div>
           <div className='col-6'>Total</div>
           <div className='col-7'></div>
         </div>
@@ -162,7 +164,7 @@ const MobileView = ({ marketData, setIsAdd, userData, isvisible, vsCurrency }) =
     <>
      <div className={styles.table}>
         <div className={`${styles['table-head']} ${'table-head'}`}>
-          <div className='col-1'>Nome</div>
+          <div className='col-1'>Name</div>
           <div className='col-2'>Price</div>
           <div className='col-3'>Qtd</div>
           <div className='col-4'></div>
@@ -279,7 +281,7 @@ export async function getServerSideProps(context) {
 
   // https://blog.logrocket.com/handling-data-fetching-next-js-useswr/ -- find mutate later to apply on updates realized
   // reset git branch 
-  // abstract cookies to one function
+  // abstract cookies to one function -- ok
   // https://medium.com/javascript-dots/cache-api-in-javascript-644380391681
 
   // https://tinloof.com/blog/using-next.js-and-vercel-to-instantly-load-a-data-heavy-website
@@ -532,6 +534,7 @@ const Content = ({ session, isVisible, vsCurrency}) => {
 
             `}</style>
       
+        <Chart session={session} vsCurrency={vsCurrency} />
         </main>
       </div>
     </>
@@ -549,6 +552,7 @@ export default ({ session, isVisible, userVal, vsFiat }) => {
     <>
       <Head>
         <title>Dashboard</title>
+        <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.1/dist/echarts.min.js" integrity="sha256-IF32ooP8NPIzQg/fs7lVHpwG92JcCPE1TZAEyFSgGZU=" crossorigin="anonymous"></script>
       </Head>
       <Header vsCurrency={vsCurrency} setVsCurrency={setVsCurrency} />
       <Content vsCurrency={vsCurrency} session={session} isVisible={isVisible} userVal={userVal}  />
