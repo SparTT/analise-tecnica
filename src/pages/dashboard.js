@@ -7,8 +7,6 @@ import Head from 'next/head'
 import Modal from '../components/elements/modal'
 import useSWR from 'swr'
 
-import Chart from "../components/crypto/chart";
-
 let notVisible = '*****'
 
 const DesktopView = ({ marketData, setIsAdd, userData, isvisible, vsCurrency }) => {
@@ -347,9 +345,6 @@ const Content = ({ session, isVisible, vsCurrency}) => {
           setCryptoStr(Object.keys(userVal).toString())
       }
       fetchUserData()
-
-
-      console.time('get-data')
     } else {
       signIn()
     }
@@ -533,8 +528,6 @@ const Content = ({ session, isVisible, vsCurrency}) => {
             }
 
             `}</style>
-      
-        <Chart session={session} vsCurrency={vsCurrency} />
         </main>
       </div>
     </>

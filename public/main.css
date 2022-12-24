@@ -1,0 +1,73 @@
+ /* new layout */
+
+ .container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  /* talvez só pra home */
+  width: 90%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+body {
+  background: #121212;
+  color: white;
+}
+
+.crypto-table-container, .donut-chart-container, .daily-val-container {
+  background-color: #504e5257;
+  padding: 35px;
+  box-sizing: border-box;
+  border-radius: 0.775rem;
+}
+
+.crypto-table-container {
+  width: 65%;
+  overflow-y: scroll;
+  display: flex;
+  flex-direction: column;
+  align-content: center;
+  align-items: center;
+}
+
+.donut-chart-container {
+  width: 30%;
+}
+
+.donut-chart-container, .daily-val-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+
+.crypto-table-container, .donut-chart-container {
+  height: 40vh;
+  min-height: 375px;
+}
+
+.daily-val-container {
+  width: 100%;
+  min-height: 360px;
+}
+
+.first-content {
+  width: 100%;
+}
+
+@media screen and (max-width: 600px) {
+  .crypto-table-container, .donut-chart-container, .daily-val-container {
+    width: 100%;
+    overflow: scroll;
+    height: auto;
+    display: block;
+  }
+
+  .daily-val-container {
+    overflow-x: scroll;
+  }
+
+}

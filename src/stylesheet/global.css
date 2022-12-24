@@ -6,39 +6,15 @@ body {
     Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue,
     sans-serif;
   background-color: #f7f7f7;
-}
-
-.tooltip {
-  position: absolute;
-  text-align: center;
-  width: 125px;
-  height: auto;
-  padding: 2px;
-  font: 12px sans-serif;
-  background-color: #000;
-  padding: 5px 8px;
-  color: #fff;
-  border: 0px;
-  border-radius: 8px;
-  pointer-events: none;
-}
-
-g, circle {
-  pointer-events: all;
-}
-
-.chart-container {
-  width: 1000px;
+  /*height: 100vh;*/
+  /*min-height: 100vh;*/
 }
 
 /* <!-- Header */
 
 header {
   overflow: hidden;
-  background-color: bisque;
-  /*position: fixed;
-  width: 100%;
-  height: auto;*/
+  background-color: #504e5257;
 }
 
 .header-container {
@@ -111,9 +87,14 @@ header .logo {
   height: 22px;
 }
 
+/* até conseguir uma logo nova */
+header .logo {
+  filter: invert(1);
+}
+
 header a, header select, header button {
   float: left;
-  color: black;
+  color: white;
   text-align: center;
   padding: 12px;
   text-decoration: none;
@@ -123,17 +104,15 @@ header a, header select, header button {
   font-weight: bold;
 }
 
+header select option {
+  color: black;
+}
+
 header button {
   padding: 12px;
   border: unset;
   background: unset;
   cursor: pointer;
-}
-
-
-header a.active {
-  background-color: dodgerblue;
-  color: white;
 }
 
 .currency-type {
@@ -265,15 +244,14 @@ header a.active {
 
 /* Header -->  */
 
+
 .container {
   min-height: 100vh;
-  padding: 1rem 0;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
 }
-
 
 .text-center {
   text-align: center;
@@ -302,15 +280,9 @@ header a.active {
 
 /* Charts */
 
-div#chart {
-  border: 1px solid black;
-}
-
-svg {
-  border: 1px solid lime;
-}
-
-
 .echarts-for-react {
   width: 100%;
+  min-width: 450px;
 }
+
+

@@ -101,3 +101,8 @@ export function formatStrDate(dia, usaHoras) {
   return `${day}/${month}/${year}${specificTiming}`
 
 }
+
+
+export function roundToNearestNumber(num, rounder) {
+  return Math.round(num / rounder) * rounder;
+}
