@@ -71,7 +71,7 @@ const CryptoTable = ({ data, vsCurrency }) => {
       </thead>
       <tbody>
         { data.map( coin => (
-          <tr>
+          <tr key={coin.name}>
             <td>
               {coin.name}
             </td>
@@ -158,6 +158,7 @@ const ContentSkeleton = ({ session, vsCurrency, isLoading, data }) => {
             display: flex;
             flex-direction: row;
             justify-content: space-between;
+            gap: 2vw;
           }
 
           .mx-5 {
@@ -165,7 +166,7 @@ const ContentSkeleton = ({ session, vsCurrency, isLoading, data }) => {
             margin-bottom: 5vh;
           }
 
-          @media screen and (max-width: 600px) {
+          @media screen and (max-width: 800px) {
             .row {
               flex-direction: column;
               gap: 5vh;

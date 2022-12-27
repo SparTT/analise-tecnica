@@ -21,18 +21,23 @@ export function Donut({ data }) {
 
   if (!data[0].value) data = prepareDonutData(data)
 
-  
-  const chartOptions =  {
+
+  const [needsTop, setNeedsTop ] = useState(null)
+
+
+    
+  let chartOptions =  {
     tooltip: {
       trigger: 'item'
     },
     
     legend: {
-      orient: 'vertical',
-      left: 'left',
+      orient: 'horizontal',
+      left: 'center',
       textStyle: {
         color: 'white'
-      }
+      },
+      top: '10%',
     },
     title: {
       text: 'Your portfolio',
@@ -40,6 +45,7 @@ export function Donut({ data }) {
       textStyle: {
         color: 'white',
       },
+      top: '0%',
     },
     series: [
       {
@@ -67,13 +73,51 @@ export function Donut({ data }) {
         labelLine: {
           show: false
         },
-        data: data
+        data: data,
+        top: '20%'
       }
     ]
   };
-  
 
-  const [ userData, setUserData ] = useState(null);
+
+  
+  useEffect(() => {
+
+    window.addEventListener('resize', () => {
+      let type = document.body.clientWidth > 1300 ? '0%' : '20%'
+      if (type !== needsTop) setNeedsTop(type)
+
+      document.body.clientWidth > 1300 ? setNeedsTop('0%') : setNeedsTop('20%')
+      document.body.clientWidth < 1100 ? setNeedsTop('20%') : setNeedsTop('40%')
+      document.body.clientWidth < 800 ? setNeedsTop('0%') : setNeedsTop('40%')
+  
+      if(document.body.clientWidth < 600) {
+        setNeedsTop('0%')
+        chartOptions.legend.left = 'center'
+        chartOptions.legend.orient = 'horizontal'
+      }
+      console.log(chartOptions.legend)
+    }) 
+    
+    document.body.clientWidth > 1300 ? setNeedsTop('0%') : setNeedsTop('20%')
+
+    if (document.body.clientWidth < 1100) {
+      setNeedsTop('20%') 
+      document.body.clientWidth < 800 ? setNeedsTop('0%') : setNeedsTop('40%')
+    }    
+
+    if (document.body.clientWidth < 600) {
+      setNeedsTop('0%')
+      chartOptions.legend.left = 'center'
+      chartOptions.legend.orient = 'horizontal'
+    }
+   // document.body.clientWidth < 800 ? setNeedsTop('40%') : setNeedsTop('50%')
+
+  }, [])
+
+  //chartOptions.series[0].top = needsTop
+
+  console.log(chartOptions.series[0].top)
 
   return (
     <>

@@ -14,7 +14,7 @@ body {
 
 header {
   overflow: hidden;
-  background-color: #504e5257;
+  background-color: #272628;
 }
 
 .header-container {
@@ -282,7 +282,7 @@ header button {
 
 .echarts-for-react {
   width: 100%;
-  min-width: 450px;
+  /*min-width: 450px;*/
 }
 
 

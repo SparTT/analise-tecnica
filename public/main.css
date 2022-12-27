@@ -25,8 +25,8 @@ body {
 }
 
 .crypto-table-container {
-  width: 65%;
-  overflow-y: scroll;
+  width: -webkit-fill-available;
+  /*overflow-y: scroll;*/
   display: flex;
   flex-direction: column;
   align-content: center;
@@ -34,7 +34,7 @@ body {
 }
 
 .donut-chart-container {
-  width: 30%;
+  min-width: 450px;
 }
 
 .donut-chart-container, .daily-val-container {
@@ -45,7 +45,8 @@ body {
 
 
 .crypto-table-container, .donut-chart-container {
-  height: 40vh;
+  /*height: 40vh;*/
+  height: auto;
   min-height: 375px;
 }
 
@@ -58,7 +59,15 @@ body {
   width: 100%;
 }
 
-@media screen and (max-width: 600px) {
+@media screen and (max-width: 1100px) {
+  .donut-chart-container .echarts-for-react {
+    min-height: 500px;
+    min-width: 300px;
+  }
+}
+
+
+@media screen and (max-width: 800px) {
   .crypto-table-container, .donut-chart-container, .daily-val-container {
     width: 100%;
     overflow: scroll;
@@ -66,8 +75,21 @@ body {
     display: block;
   }
 
+  .donut-chart-container {
+    min-width: unset;
+  }
+
   .daily-val-container {
     overflow-x: scroll;
   }
+
+  .daily-val-container .echarts-for-react {
+    min-width: 450px;
+  }
+
+  .donut-chart-container .echarts-for-react {
+    min-width: unset;
+  }
+  
 
 }
