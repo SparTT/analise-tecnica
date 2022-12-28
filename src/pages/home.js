@@ -4,7 +4,7 @@ import Header from "../components/elements/header"
 import React, { useState, useEffect } from 'react';
 import useSWR from 'swr'
 
-import { getCookie, fetcher, prepareMultCrypto, formatCurrency } from '../components/general-scripts/reusable-scripts'
+import { getCookie, fetcher, prepareMultCrypto, formatCurrency, Loading } from '../components/general-scripts/reusable-scripts'
 import { LineChart } from "../components/crypto/daily-chart"
 import Donut from "../components/crypto/doughnut-chart";
 
@@ -37,7 +37,7 @@ export async function getServerSideProps(context) {
 
 const CryptoTable = ({ data, vsCurrency }) => {
 
-  if(!data) return <div> carregando </div>
+  if(!data) return <Loading />
 
   // amount spent: // { isvisible === true ? formatCurrency(coin.user_spent_amount, 'brl') : notVisible} 
 
@@ -112,6 +112,12 @@ const CryptoTable = ({ data, vsCurrency }) => {
         font-size: 1.1rem;
         font-weight: bold;
       }
+
+      @media screen and (max-width: 600px) {
+        table {
+          align-self: flex-start;
+        }
+      }
     
     `}
     </style>
@@ -126,19 +132,25 @@ const ContentSkeleton = ({ session, vsCurrency, isLoading, data }) => {
 
   // texto de carregando até add shimmer
 
+  let start = <h1>Hi!</h1>
+
+  if (session) {
+    start = <h1>Hi, {session.user.name.first}</h1>
+  }
+
   return (
     <>
       <div className="container">
         <div className="first-content">
-          <h1>Hi, {session.user.name.first}</h1>
+          {start}
         </div>
         <div className="row">
           <div className="crypto-table-container">
-            <h2>Total value: {isLoading === true ? 'carregando' : formatCurrency(data.user_total_amount, vsCurrency)}</h2>
-            <CryptoTable data={isLoading === true ? null : data.cryptos} vsCurrency={vsCurrency} />
+            <h2>Total value: {isLoading ? 'carregando' : formatCurrency(data.user_total_amount, vsCurrency)}</h2>
+            <CryptoTable data={isLoading ? null : data.cryptos} vsCurrency={vsCurrency} />
           </div>
           <div className="donut-chart-container">
-            <Donut data={isLoading === true ? null : data.cryptos} />
+            <Donut data={isLoading ? null : data.cryptos} />
           </div>
         </div>
         <div className="row mx-5">
@@ -248,7 +260,7 @@ const Main = ({ session, vsCurrency }) => {
 
   // testar sem || typeof data === 'undefined'  em prod
 
-  if (cryptoStr === null || !data) return <ContentSkeleton session={session} vsCurrency={vsCurrency} isLoading={true} />
+  if (!cryptoStr || !userData || !data) return <ContentSkeleton session={session} vsCurrency={vsCurrency} isLoading={true} />
 
   // pensar nisso dps
   /*

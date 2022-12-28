@@ -106,3 +106,7 @@ export function formatStrDate(dia, usaHoras) {
 export function roundToNearestNumber(num, rounder) {
   return Math.round(num / rounder) * rounder;
 }
+
+export const Loading = () => {
+  return <div className="loading-content">Loading</div>
+}

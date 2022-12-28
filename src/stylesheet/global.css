@@ -286,3 +286,9 @@ header button {
 }
 
 
+/* loading */
+
+.loading-content {
+  margin-left: auto;
+  margin-right: auto;
+}

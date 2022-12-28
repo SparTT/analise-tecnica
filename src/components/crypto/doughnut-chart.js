@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import ReactEcharts from 'echarts-for-react';
 import { signIn } from "next-auth/react"
+import { Loading } from '../general-scripts/reusable-scripts';
 
 function prepareDonutData(data) {
   let res = []
@@ -17,7 +18,7 @@ function prepareDonutData(data) {
 export function Donut({ data }) {
 
 
-  if(!data) return <div>carregando</div>
+  if(!data) return <Loading />
 
   if (!data[0].value) data = prepareDonutData(data)
 

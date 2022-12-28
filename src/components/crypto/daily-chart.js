@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import ReactEcharts from 'echarts-for-react';
 import { signIn } from "next-auth/react"
 
-import { roundToNearestNumber } from '../general-scripts/reusable-scripts';
+import { roundToNearestNumber, Loading } from '../general-scripts/reusable-scripts';
 
 export function LineChart({ vsCurrency, externalData, data }) {
 
@@ -30,7 +30,7 @@ export function LineChart({ vsCurrency, externalData, data }) {
   }
 
   // criar loading bonitinho (ou um load shimmer)
-  if (!userData) return <div>Carregando</div>
+  if (!userData) return <Loading />
 
   //console.log(userData, isExternalData)
 
