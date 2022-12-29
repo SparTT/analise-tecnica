@@ -73,10 +73,14 @@ const CryptoTable = ({ data, vsCurrency }) => {
         { data.map( coin => (
           <tr key={coin.name}>
             <td>
-              {coin.name}
+              <span>
+                {coin.name}
+              </span>
             </td>
             <td>
-              {coin.user_crypto_qtd} 
+              <span>
+                {coin.user_crypto_qtd} 
+              </span>
             </td>
             <td>
               <span className={`${['price-change']} ${coin.price_change_percentage_24h_in_currency < 0 ? ['price-down'] : ['price-up']}`}>
@@ -98,6 +102,11 @@ const CryptoTable = ({ data, vsCurrency }) => {
                 { formatCurrency(coin.user_fiat_amount, vsCurrency) } 
               </span>
             </td>
+            <td>
+              <button className='edit-btn' onClick={() => openModal('edit', setIsAdd, userData[coin.id], coin.id)}>
+                <img src="/icons/pencil-alt.svg" />
+              </button>
+          </td>
           </tr>
         ))}
       </tbody>
@@ -106,11 +115,39 @@ const CryptoTable = ({ data, vsCurrency }) => {
 
       table {
         width: 100%;
+        border-collapse: collapse;
+      }
+
+      table tbody tr {
+        border: 1px solid #505050bf;
+        border-left: unset;
+        border-right: unset;
       }
 
       table thead td {
         font-size: 1.1rem;
         font-weight: bold;
+      }
+
+      table td {
+        font-weight: bold;
+        padding-top: 5px;
+        padding-bottom: 5px;
+      }
+
+      tr td:nth-child(1) {
+        padding-left: 10px;
+      }
+
+      .edit-btn {
+        width: 35px;
+        background-color: transparent;
+        border: unset;
+      }
+      
+      .edit-btn img {
+        width: 100%;
+        filter: invert(1);
       }
 
       @media screen and (max-width: 600px) {

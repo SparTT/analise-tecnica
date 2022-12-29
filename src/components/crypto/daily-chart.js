@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import ReactEcharts from 'echarts-for-react';
 import { signIn } from "next-auth/react"
+import { graphic } from 'echarts'
 
 import { roundToNearestNumber, Loading } from '../general-scripts/reusable-scripts';
 
@@ -48,6 +49,7 @@ export function LineChart({ vsCurrency, externalData, data }) {
         xAxis: {
           type: 'category',
           data: xArr,
+          boundaryGap: false,
           axisLine: {
             lineStyle: {
               //color: '#a19f9f',
@@ -90,9 +92,21 @@ export function LineChart({ vsCurrency, externalData, data }) {
           data: userValue,
           type: 'line',
           symbol: 'none',
+          smooth: 0.6,
           itemStyle: {
             color: '#6639e4'
           },
+          areaStyle: {
+            color: new graphic.LinearGradient(0, 0, 0, 1, [
+              {
+                offset: 0,
+                color: '#6639e4db'
+              },
+              {
+                offset: 1,
+                color: '#6639e452'
+              }])
+          }
         }]
       }}
     />
