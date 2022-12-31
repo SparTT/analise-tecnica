@@ -82,6 +82,10 @@ header {
   outline: none;
 }
 
+:focus-visible {
+  outline: none;
+}
+
 header .logo {
   width: 100px;
   height: 22px;

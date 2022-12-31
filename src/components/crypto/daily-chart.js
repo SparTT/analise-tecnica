@@ -41,6 +41,17 @@ export function LineChart({ vsCurrency, externalData, data }) {
   let smallestVal = Math.min.apply(null, userValue) * 0.99
   //console.log(smallestVal)
 
+  let chartGap
+  
+  switch (vsCurrency) {
+    case 'brl':
+      chartGap = 500
+      break;
+    default:
+      chartGap = 150
+      break;
+  }
+
   smallestVal = roundToNearestNumber(smallestVal, 500)
   return (
     <>
@@ -70,7 +81,7 @@ export function LineChart({ vsCurrency, externalData, data }) {
         yAxis: {
           type: 'value',
           min: smallestVal,
-          minInterval: 500,
+          minInterval: chartGap,
           //max: highestVal,
           axisLine: {
             lineStyle: {
