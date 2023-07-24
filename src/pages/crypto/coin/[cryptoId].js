@@ -1,9 +1,9 @@
 import { useRouter } from 'next/router'
-import styles from '../../stylesheet/pages/cryptos.module.css'
+import styles from '@/stylesheet/pages/cryptos.module.css'
 import { useEffect } from 'react'
 import React, { useState, } from 'react';
-import Header from '../../../components/elements/header'
-import { formatCurrency, capitalize, fetcher } from '../../components/general-scripts/reusable-scripts'
+import Header from '@/components/elements/header'
+import { formatCurrency, capitalize, fetcher } from '@/components/utils/reusable-scripts'
 import Head from 'next/head'
 import useSWR from 'swr'
 
