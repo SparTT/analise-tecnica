@@ -1,7 +1,8 @@
 import NextAuth from "next-auth"
 import Credentials from 'next-auth/providers/credentials'
-import { user } from "pg/lib/defaults";
 const ObjectId = require('mongodb').ObjectId;
+
+import { validateUser } from "../../../components/utils/validateUser";
 
 
 const { MongoClient } = require("mongodb");
@@ -10,36 +11,13 @@ const { MongoClient } = require("mongodb");
 // https://github.com/nextauthjs
 
 
-async function validateUser(credentials) {
-
-
-  console.log('validando user')
-
-
-  const dbName = "users";
-  const client = new MongoClient(process.env.DATABASE_URL);
-
-  const db = client.db(dbName);
-
-  const col = db.collection("data");
-
-  const resp = await col.findOne({username: credentials.username});
-
-  //console.log('rows', resp.rows)
-        
-  await client.close();
-
-  return resp
-
-}
-
 const providers = [
   Credentials({
     id: "domain-login",
     name: 'Credentials',
     session: {
       jwt: true,
-      maxAge: 30 * 24 * 60 * 60
+      maxAge: 30 * 24 * 60 * 60 // expire in 30 days
     },
     credentials: {
       username: { label: "Nome de Usuário", type: "text", placeholder: "username" },
@@ -48,17 +26,15 @@ const providers = [
     authorize: async (credentials) => {
       console.log('cred', credentials)
 
-      let user = await validateUser(credentials)
-      
+      let user = await validateUser(credentials, true)
+
       //console.log('user', user)
 
-      if(user === null) throw 'Usuário não encontrado'
+      if (user === null) throw new Error('Usuário não encontrado')
 
-      if (user) {
-        return user
-      } else {
-        throw 'Usuário não encontrado'
-      }
+      if (user.error) throw new Error(user.error)
+
+      return user
     }
   })
 ]
@@ -77,10 +53,12 @@ const callbacks = {
     
     if (user) {
       //token.accessToken = user.token
+      token.name = user.name
       token.username = user.username
+      token.email = user.email
       token.id = user._id
       token.userData = user.cryptos
-      console.log('passei aq')
+      //console.log('passei aq')
     }
     
    
@@ -93,7 +71,9 @@ const callbacks = {
     //console.log('session data', data)
     
     session.accessToken = token
+    session.accessToken.name = token.name
     session.accessToken.username = token.username
+    session.accessToken.email = token.email
     session.accessToken.id = new ObjectId(token.id)
     return session
   }

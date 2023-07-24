@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 html,
 body {
   padding: 0;
@@ -256,11 +260,6 @@ header button {
   justify-content: center;
   align-items: center;
 }
-
-.text-center {
-  text-align: center;
-}
-
 .name-and-icon {
   display: flex;
   align-items: center;

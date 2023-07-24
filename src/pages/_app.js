@@ -1,6 +1,6 @@
 import { SessionProvider } from "next-auth/react"
 import Head from "next/head"
-import '../stylesheet/global.css'
+import '../stylesheet/globals.css'
 import { Analytics } from '@vercel/analytics/react';
 
 

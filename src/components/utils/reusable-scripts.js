@@ -34,6 +34,7 @@ export function formatCurrency(number, currency) {
 export function capitalize(string) {
   return string.charAt(0).toUpperCase() + string.slice(1);
 }
+
 export function prepareMultCrypto(resp) {
 
   for(let i = 0; i < resp.length; i++) {

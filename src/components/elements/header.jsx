@@ -145,7 +145,7 @@ const Header = ({ vsCurrency, setVsCurrency }) => {
 
 
   return (
-    <header>
+    <header className="bg-zinc-900">
         <div className="header-container" collapsed="false">
           <div className="first-col">
             <a className="collapse-header hide-desktop" onClick={() => collapseHeader()} >☰</a>

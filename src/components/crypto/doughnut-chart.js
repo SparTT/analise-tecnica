@@ -1,33 +1,39 @@
 import React, { useState, useEffect } from 'react';
 import ReactEcharts from 'echarts-for-react';
 import { signIn } from "next-auth/react"
-import { Loading } from '../general-scripts/reusable-scripts';
+import { Loading } from '../utils/reusable-scripts';
 
 function prepareDonutData(data) {
   let res = []
   for(let el of data) {
     let coin = {
       name: el.id,
-      value: el.user_fiat_amount
+      value: el.user_fiat_amount.toFixed(2)
     }
     res.push(coin)
   }
   return res
 }
 
-export function Donut({ data }) {
+export function Donut({ data, hasError }) {
 
 
-  if(!data) return <Loading />
+  if (hasError?.error) return (
+    <>
+      <div className="text-3xl">Erro (provavelmente na API da coingecko)</div>
+      <div className="text-xl">{hasError.error}</div>
+      <div className="text-xl">{hasError.errMsg.toString()}</div>
+    </> 
+  )
 
-  if (!data[0].value) data = prepareDonutData(data)
+  if (!data) return <Loading />
 
 
-  const [needsTop, setNeedsTop ] = useState(null)
+  data = prepareDonutData(data)
 
+  const [needsTop, setNeedsTop ] = useState(null)  
 
-    
-  let chartOptions =  {
+  let chartOptions = {
     tooltip: {
       trigger: 'item'
     },
@@ -47,6 +53,7 @@ export function Donut({ data }) {
         color: 'white',
       },
       top: '0%',
+      show: false
     },
     series: [
       {

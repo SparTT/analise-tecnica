@@ -2,7 +2,7 @@ import { useRouter } from 'next/router'
 import styles from '../../stylesheet/pages/cryptos.module.css'
 import { useEffect } from 'react'
 import React, { useState, } from 'react';
-import Header from '../../components/elements/header'
+import Header from '../../../components/elements/header'
 import { formatCurrency, capitalize, fetcher } from '../../components/general-scripts/reusable-scripts'
 import Head from 'next/head'
 import useSWR from 'swr'
@@ -46,13 +46,7 @@ const CalculateQtd = ({ cryptoPrice, cryptoName, fiatPreference }) => {
   console.log(cryptoPrice)
 
   useEffect(() => {
-
-    if(lastChangedVal === 'crypto') {
-      convertCrypto()
-    } else {
-      convertFiat()
-    }
-
+    lastChangedVal === 'crypto' ? convertCrypto() : convertFiat()
   })
 
 
