@@ -15,5 +15,9 @@
           }
         ]
       }
-    ]
+    ],
+    "crons": [{
+      "path": "/api/ping",
+      "schedule": "*/5 * * * *"
+    }]
   }
