@@ -193,15 +193,15 @@ const ContentSkeleton = ({ session, vsCurrency, isLoading, data, setShowModal, s
           </div>
           <div className="p-5 box-border rounded-lg bg-zinc-900 w-full overflow-scroll min-h-[375px] flex flex-col justify-center lg:w-1/4 lg:p-8 lg:overflow-auto">
             <h2 className="text-2xl font-bold mb-5 text-center">Your portfolio</h2>
-            <div className="min-w-[250px] lg:min-w-0 text-center">
+            <div className="min-w-[250px] lg:min-w-0">
               <Donut data={isLoading ? null : data.cryptos} hasError={hasError} />
             </div>
           </div>
         </div>
         <div className="flex-col items-center gap-3 row my-5 w-full">
-          <div className="p-5 box-border rounded-lg bg-zinc-900 w-full min-h-[415px] lg:p-8">
-            <h2 className="text-2xl font-bold mb-5 text-center">Daily Value</h2>
-            <LineChart vsCurrency={vsCurrency} />
+          <div className="p-5 box-border rounded-lg bg-zinc-900 w-full min-h-[415px] text-center lg:p-8">
+            <h2 className="text-2xl font-bold mb-5">Daily Value</h2>
+              {isLoading && !hasError ? 'Loading' : <LineChart vsCurrency={vsCurrency} /> }
           </div>
         </div>
       </main>

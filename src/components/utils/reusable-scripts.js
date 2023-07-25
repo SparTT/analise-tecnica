@@ -109,5 +109,5 @@ export function roundToNearestNumber(num, rounder) {
 }
 
 export const Loading = () => {
-  return <div className="loading-content">Loading</div>
+  return <div className="loading-content text-center">Loading</div>
 }
