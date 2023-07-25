@@ -136,8 +136,8 @@ const CryptoTable = ({ data, vsCurrency, setShowModal, setModalValues, session, 
               </button>
           </td>
           <td className="px-2">
-              <button className='w-[25px] bg-transparent p-[2px] bg-rose-600 rounded-md' onClick={() => deleteValue(coin)}>
-              <i className="bi bi-trash"></i>
+              <button className='p-[1px] px-[5px] bg-rose-600 rounded-md text-center' onClick={() => deleteValue(coin)}>
+                <i className="bi bi-trash"></i>
               </button>
           </td>
           </tr>
