@@ -1,16 +1,9 @@
 import { useSession, getSession, signIn } from "next-auth/react"
 import Head from 'next/head'
-import Header from "../../components/elements/header"
 import React, { useState, useEffect } from 'react';
-import { cache } from "react";
-import useSWR from 'swr'
-
 import { getCookie, fetcher, prepareMultCrypto, formatCurrency, Loading } from '../../components/utils/reusable-scripts'
 import { LineChart } from "../../components/crypto/daily-chart"
 import Donut from "../../components/crypto/doughnut-chart";
-
-import styles from '../../stylesheet/components/table.module.css'
-import Image from "next/image";
 import Sidebar from "@/components/elements/sidebar";
 import Modal from "@/components/elements/crypto-modal";
 
