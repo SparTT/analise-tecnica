@@ -162,6 +162,8 @@ const ContentSkeleton = ({ session, vsCurrency, isLoading, data, setShowModal, s
     setModalValues(null)
   }
 
+  //console.log(session)
+
   let start = session ? `Hi, ${session.user.name.first}` : 'Hi!'
   return (
     <>
@@ -179,7 +181,7 @@ const ContentSkeleton = ({ session, vsCurrency, isLoading, data, setShowModal, s
           </div>
         </div>
         <div className="w-full flex flex-col justify-between gap-6 lg:flex-row">
-          <div className="p-5 box-border rounded-lg bg-zinc-900 w-full min-h-[375px] flex flex-col justify-center lg:w-3/4 lg:p-8">
+          <div className="p-5 box-border rounded-lg bg-zinc-900 w-full min-h-[415px] max-h-[415px] flex flex-col justify-center lg:w-3/4 lg:p-8">
             <h2 className="text-2xl font-bold mb-5 text-center">{isLoading ? '' : `Total value: ${formatCurrency(data.user_total_amount, vsCurrency)}`}</h2>
             <CryptoTable 
               data={isLoading ? null : data.cryptos} 
@@ -191,7 +193,7 @@ const ContentSkeleton = ({ session, vsCurrency, isLoading, data, setShowModal, s
               hasError={hasError}
             />
           </div>
-          <div className="p-5 box-border rounded-lg bg-zinc-900 w-full overflow-scroll min-h-[375px] flex flex-col justify-center lg:w-1/4 lg:p-8 lg:overflow-auto">
+          <div className="p-5 box-border rounded-lg bg-zinc-900 w-full overflow-scroll min-h-[415px] max-h-[415px] flex flex-col justify-center lg:w-1/4 lg:p-8 lg:overflow-visible">
             <h2 className="text-2xl font-bold mb-5 text-center">Your portfolio</h2>
             <div className="min-w-[250px] lg:min-w-0">
               <Donut data={isLoading ? null : data.cryptos} hasError={hasError} />
@@ -210,7 +212,7 @@ const ContentSkeleton = ({ session, vsCurrency, isLoading, data, setShowModal, s
 }
 
 
-export default function Home ({ vsFiat, session }) {
+export default function CryptoDashboard ({ vsFiat, session }) {
 
   const [ vsCurrency, setVsCurrency ] = useState(vsFiat)
 
@@ -222,6 +224,7 @@ export default function Home ({ vsFiat, session }) {
   const [showModal, setShowModal] = useState(false);
   const [modalValues, setModalValues] = useState(null)
 
+  // use cryptoData and vsCurrency through useContext/getContext
   //console.log(session)
 
   async function getCryptoData(vs_currency, cryptoId) {
@@ -268,32 +271,25 @@ export default function Home ({ vsFiat, session }) {
           getCryptoData(vsCurrency, Object.keys(userVal).toString())
       }
       getUserData()
-
-      console.time('get-data')
     } else {
       signIn()
     }
     
   }, [])
 
-
-  
-  //let data = getData(cryptoStr, vsCurrency)
-
-  // testar sem || typeof data === 'undefined'  em prod
-
   if (!cryptoStr || !userData || !cryptoData) return (
     <>
+      <Head>
+        <title>Loading</title>
+      </Head>
       <Sidebar session={session} />
       <ContentSkeleton session={session} vsCurrency={vsCurrency} isLoading={true} />
     </>
   )
 
-  // pensar nisso dps
-
   if (cryptoData?.error) return (
-    // add errorMsg on Content
     <>
+    <title>Error :(</title>
     <Sidebar session={session} />
     <ContentSkeleton session={session} vsCurrency={vsCurrency} isLoading={true} hasError={cryptoData} />
   </>

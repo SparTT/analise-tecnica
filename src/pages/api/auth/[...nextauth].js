@@ -4,9 +4,6 @@ const ObjectId = require('mongodb').ObjectId;
 
 import { validateUser } from "../../../components/utils/validateUser";
 
-
-const { MongoClient } = require("mongodb");
-
 // https://next-auth.js.org/getting-started/example
 // https://github.com/nextauthjs
 
@@ -17,7 +14,7 @@ const providers = [
     name: 'Credentials',
     session: {
       jwt: true,
-      maxAge: 30 * 24 * 60 * 60 // expire in 30 days
+      maxAge: 7 * 24 * 60 * 60 // expire in 7 days (?)
     },
     credentials: {
       username: { label: "Nome de Usuário", type: "text", placeholder: "username" },
@@ -57,7 +54,6 @@ const callbacks = {
       token.username = user.username
       token.email = user.email
       token.id = user._id
-      token.userData = user.cryptos
       //console.log('passei aq')
     }
     

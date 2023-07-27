@@ -21,6 +21,7 @@ export default function Home({ vsFiat, session }) {
   const [ vsCurrency, setVsCurrency ] = useState(vsFiat)
 
   // <Header vsCurrency={vsCurrency} setVsCurrency={setVsCurrency} />
+  // https://binance-docs.github.io/apidocs/spot/en/#24hr-ticker-price-change-statistics
 
   return (
     <>
@@ -39,7 +40,9 @@ export default function Home({ vsFiat, session }) {
             <li>Set up vs_currency</li>
             <li>Add cache validation on coingecko req - temp</li>
             <li>Solve that mobile toggle bug on doughnut chart</li>
-            <li>Find another cryptocurrency API to use instead of coingecko - probably coinmarketcap</li>
+            <li>Find another cryptocurrency API to use instead of coingecko</li>
+            <li>1 - coinmarketcap</li>
+            <li>2 - binance <a href="https://binance-docs.github.io/apidocs/spot/en/#24hr-ticker-price-change-statistics" className='text-blue-700'>API LINK</a></li>
             <li className='line-through'>Use tailwind on /Crypto</li>
             <li className='line-through'>Change auth</li>
             <li className='line-through'>Set up navigation method - sidebar used</li>
