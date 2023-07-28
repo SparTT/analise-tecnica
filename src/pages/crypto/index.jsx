@@ -180,8 +180,8 @@ const ContentSkeleton = ({ session, vsCurrency, isLoading, data, setShowModal, s
             </button>
           </div>
         </div>
-        <div className="w-full flex flex-col justify-between gap-6 lg:flex-row min-h-[416px] max-h-[416px]">
-          <div className="p-5 box-border rounded-lg bg-zinc-900 w-full flex flex-col justify-center lg:w-3/4 lg:p-8">
+        <div className="w-full flex flex-col justify-between gap-6 lg:flex-row">
+          <div className="p-5 box-border rounded-lg bg-zinc-900 w-full flex flex-col justify-center lg:w-3/4 lg:p-8 min-h-[416px] max-h-[416px]">
             <h2 className="text-2xl font-bold mb-5 text-center">{isLoading ? '' : `Total value: ${formatCurrency(data.user_total_amount, vsCurrency)}`}</h2>
             <CryptoTable 
               data={isLoading ? null : data.cryptos} 
@@ -193,7 +193,7 @@ const ContentSkeleton = ({ session, vsCurrency, isLoading, data, setShowModal, s
               hasError={hasError}
             />
           </div>
-          <div className="p-5 box-border rounded-lg bg-zinc-900 w-full overflow-scroll flex flex-col justify-center lg:w-1/4 lg:p-8 lg:overflow-visible">
+          <div className="p-5 box-border rounded-lg bg-zinc-900 w-full overflow-scroll flex flex-col justify-center lg:w-1/4 lg:p-8 lg:overflow-visible min-h-[416px] max-h-[416px]">
             <h2 className="text-2xl font-bold mb-5 text-center">Your portfolio</h2>
             <div className="min-w-[250px] lg:min-w-0">
               <Donut data={isLoading ? null : data.cryptos} hasError={hasError} />
