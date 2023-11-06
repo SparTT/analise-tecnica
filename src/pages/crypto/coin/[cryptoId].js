@@ -6,34 +6,10 @@ import Header from '@/components/elements/header'
 import { formatCurrency, capitalize, fetcher } from '@/components/utils/reusable-scripts'
 import Head from 'next/head'
 import useSWR from 'swr'
+import Sidebar from '@/components/elements/sidebar';
+import { useSession } from 'next-auth/react';
 
 
-// getServerSideProps
-export async function getServerSideProps(context) {
-  // Fetch data from external API
-  const crypto = context.params.cryptoId
-  //const vs = context.query.vs // &vs=${vs}
-  //const data = await fetch(`/api/crypto/get-crypto?id=${crypto}`).then(resp => resp.json())
-  // ,{secure: true,    rejectUnauthorized: false}
-
-
-  let vsFiat = context.req.headers.cookie
-
-  // change this logic later
-  if (typeof vsFiat === 'undefined') vsFiat = ''
-
-  if (vsFiat.search('vsCurrency') > -1) {
-    vsFiat = vsFiat.split('vsCurrency=')[1]
-    vsFiat = vsFiat.split(';')[0]
-    //console.log('vsFiat', vsFiat)
-  } else {
-    //console.log('cookie não encontrado')
-    vsFiat = 'brl'
-  }
-
-  // Pass data to the page via props
-  return { props: { vsFiat } }
-}
 
 const CalculateQtd = ({ cryptoPrice, cryptoName, fiatPreference }) => {
 
@@ -75,63 +51,16 @@ const CalculateQtd = ({ cryptoPrice, cryptoName, fiatPreference }) => {
 
   return(
     <>
-    <div className="calculate-container">
-      <div className='input-container'>
-        <span className="input-group-text">{cryptoName.toUpperCase()}</span>
-        <input className="calculate-input" type="number" id="crypto-input" min="" defaultValue={1} onChange={() => convertFiat()} />
+    <div className="flex flex-col justify-center bg-zinc-900 w-[90%] lg:w-[600px] py-4 gap-[15px] rounded min-h-[150px] font-bold text-lg">
+      <div className='px-4 flex justify-center gap-[10px]'>
+        <span className="py-1">{cryptoName.toUpperCase()}</span>
+        <input className="rounded text-black pl-1" type="number" id="crypto-input" min="" defaultValue={1} onChange={() => convertFiat()} />
       </div>
-      <div className='input-container'>
-        <span className="input-group-text">{fiatPreference.toUpperCase()}</span>
-        <input className="calculate-input" type="number" name="fiat-input" id="fiat-input" defaultValue={cryptoPrice} onChange={() => convertCrypto()} />
+      <div className='px-4 flex justify-center gap-[10px]'>
+        <span className="py-1">{fiatPreference.toUpperCase()}</span>
+        <input className="rounded text-black pl-1" type="number" name="fiat-input" id="fiat-input" defaultValue={cryptoPrice} onChange={() => convertCrypto()} />
       </div>
     </div>
-    <style jsx>{`
-      .calculate-container {
-        padding: 15px;
-        display: flex;
-        /*flex-wrap: wrap;*/
-        gap: 15px;
-        margin-top: 2em;
-        margin-bottom: 2em;
-        margin-left: auto;
-        margin-right: auto;
-        background-color: aliceblue;
-        border: 3px solid #dbe9f5;
-        border-radius: 0.375rem;
-        padding-top: 30px;
-        padding-bottom: 30px;
-        max-width: 600px;
-        justify-content: center;
-      }
-
-      .input-container {
-        width: auto;
-        font-weight: bold;
-      }
-
-      .input-container, .calculate-input {
-        font-size: 1.2rem;
-      }
-
-      .calculate-input {
-        width: 50%;
-      }
-
-      @media screen and (min-width: 629px) {
-        .input-container:nth-child(1) {text-align: right;}
-        .input-container:nth-child(2) {text-align: left;}
-      }
-
-      @media screen and (max-width: 629px) {
-        .input-container {text-align: center;}
-      }
-
-
-      .input-group-text {
-        margin-right: 5px;
-      }
-
-    `}</style>
     </>
   )
 }
@@ -183,24 +112,26 @@ function Price({ cryptoName, vsCurrency }) {
 }
 
 
-const Crypto = ({ vsFiat }) => {
+const Crypto = () => {
 
   const mainRouter = useRouter()
 
   const { cryptoId } = mainRouter.query
-  const [ vsCurrency, setVsCurrency ] = useState(vsFiat)
+  const [ vsCurrency, setVsCurrency ] = useState('brl')
 
   console.log(cryptoId, vsCurrency)
+
+  const { data: session, status } = useSession()
 
   return (
     <>
       <Head>
-        <title>{capitalize(cryptoId)} price</title>
+        <title>{cryptoId} price</title>
       </Head>
-      <Header vsCurrency={vsCurrency} setVsCurrency={setVsCurrency} />
-      <div className={styles.container}> 
+      <Sidebar session={session} />
+      <main className="min-h-screen flex flex-col pt-[10vh] items-center px-6 gap-y-3 lg:ml-[250px]">
         <Price cryptoName={cryptoId} vsCurrency={vsCurrency}/>
-      </div>
+      </main>
     </>
   )
 

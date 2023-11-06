@@ -24,7 +24,7 @@ export async function validateUser(credentials, checkPass) {
 
 
   const dbName = "users";
-  const client = new MongoClient(process.env.MONGODB_URI);
+  const client = new MongoClient(process.env.DATABASE_URL);
 
   const db = client.db(dbName);
 

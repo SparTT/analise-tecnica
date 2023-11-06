@@ -14,14 +14,18 @@ const Sidebar = ({ session }) => {
 
     const path = window.location.pathname
 
-    //document.querySelector(`a[href="${path}"] div`).classList.add('active')
-    document.querySelector(`a[href="${path}"]`).children[0].classList.add('bg-zinc-900', 'font-bold')
+    try {
+      //document.querySelector(`a[href="${path}"] div`).classList.add('active')
+      document.querySelector(`a[href="${path}"]`).children[0].classList.add('bg-zinc-900', 'font-bold')
 
-    if (document.querySelector(`a[href="${path}"]`).parentElement.id.includes('submenu')) {
-      const menuId = document.querySelector(`a[href="${path}"]`).parentElement.id.split('submenu-')[1]
+      if (document.querySelector(`a[href="${path}"]`).parentElement.id.includes('submenu')) {
+        const menuId = document.querySelector(`a[href="${path}"]`).parentElement.id.split('submenu-')[1]
 
-      document.querySelector(`#submenu-${menuId}`).classList.toggle("hidden");
-      document.querySelector(`#arrow-${menuId}`).classList.toggle("rotate-180");
+        document.querySelector(`#submenu-${menuId}`).classList.toggle("hidden");
+        document.querySelector(`#arrow-${menuId}`).classList.toggle("rotate-180");
+      }
+    } catch (e) {
+      // not on sidebar
     }
 
   }
@@ -34,7 +38,7 @@ const Sidebar = ({ session }) => {
       <span className="absolute text-white text-2xl top-5 left-4 cursor-pointer" onClick={(e) => openSidebar() }>
         <i className="bi bi-filter-left px-2 bg-slate-900 rounded-md"></i>
       </span>
-      <aside className="bg-zinc-950 rounded-md sidebar hidden fixed top-0 bottom-0 lg:block left-0 p-2 w-[250px] overflow-y-auto text-center font-semibold">
+      <aside className="bg-zinc-950 rounded-md sidebar hidden fixed top-0 bottom-0 lg:block left-0 p-2 w-[250px] overflow-y-auto text-center font-semibold z-10">
       <div className="">
         <div className="text-gray-100 text-xl">
           <div className="p-2.5 mt-1 flex items-center justify-center">

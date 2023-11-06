@@ -16,7 +16,7 @@ export default async function handler(req, res) {
 	if(method === 'GET') return res.status(200).json(id)
 
   const dbName = "users";
-  const client = new MongoClient(process.env.MONGODB_URI);
+  const client = new MongoClient(process.env.DATABASE_URL);
 
   const db = client.db(dbName);
 	const col = db.collection("data");

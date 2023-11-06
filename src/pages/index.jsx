@@ -2,26 +2,18 @@ import Head from 'next/head'
 import { formatCurrency, getCookie, fetcher, prepareMultCrypto } from '@/components/utils/reusable-scripts'
 import React, { useState, useEffect } from 'react';
 import Sidebar from '@/components/elements/sidebar';
-import { getSession } from 'next-auth/react';
+import { useSession } from 'next-auth/react';
 
-export async function getServerSideProps(context) {
 
-  const session = await getSession(context)
-  const cookieHeader = context.req.headers.cookie
-  
-  let vsFiat = getCookie(cookieHeader, 'vsCurrency', 'brl')
+export default function Home() {
 
-  return {
-    props: { vsFiat, session }
-  }
-}
-
-export default function Home({ vsFiat, session }) {
-
-  const [ vsCurrency, setVsCurrency ] = useState(vsFiat)
+  //const [ vsCurrency, setVsCurrency ] = useState(vsFiat)
 
   // <Header vsCurrency={vsCurrency} setVsCurrency={setVsCurrency} />
   // https://binance-docs.github.io/apidocs/spot/en/#24hr-ticker-price-change-statistics
+
+  const { data: session, status } = useSession()
+
 
   return (
     <>

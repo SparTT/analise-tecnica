@@ -6,8 +6,9 @@ import { LineChart } from "../../components/crypto/daily-chart"
 import Donut from "../../components/crypto/doughnut-chart";
 import Sidebar from "@/components/elements/sidebar";
 import Modal from "@/components/elements/crypto-modal";
+import Link from "next/link";
 
-
+/*
 export async function getServerSideProps(context) {
   
   const session = await getSession(context)
@@ -20,6 +21,7 @@ export async function getServerSideProps(context) {
   }
 
 }
+*/
 
 // https://cryptotemplate.webflow.io/
 // https://themeforest.net/item/kripton-crypto-wallet-ios-app-psd-template/screenshots/27700130?index=1
@@ -102,7 +104,9 @@ const CryptoTable = ({ data, vsCurrency, setShowModal, setModalValues, session, 
           <tr key={coin.name} className="border-b border-zinc-800 py-3 font-bold">
             <td className="pl-2">
               <span>
-                {coin.name}
+                <Link href={`/crypto/coin/${coin.id}`}>
+                  {coin.name}
+                </Link>
               </span>
             </td>
             <td className="px-2">
@@ -212,10 +216,17 @@ const ContentSkeleton = ({ session, vsCurrency, isLoading, data, setShowModal, s
 }
 
 
-export default function CryptoDashboard ({ vsFiat, session }) {
+export default function CryptoDashboard () {
 
-  const [ vsCurrency, setVsCurrency ] = useState(vsFiat)
+  
 
+
+  const { data: session, status } = useSession()
+
+  
+  //let vsFiat = getCookie(cookieHeader, 'vsCurrency', 'brl')
+
+  const [ vsCurrency, setVsCurrency ] = useState('brl')
 
 
   const [ userData, setUserData ] = useState(null);
@@ -225,6 +236,7 @@ export default function CryptoDashboard ({ vsFiat, session }) {
   const [modalValues, setModalValues] = useState(null)
 
   // use cryptoData and vsCurrency through useContext/getContext
+  // show modal through useContext
   //console.log(session)
 
   async function getCryptoData(vs_currency, cryptoId) {
@@ -250,32 +262,51 @@ export default function CryptoDashboard ({ vsFiat, session }) {
     }
   }
 
-  useEffect( () => {
-    if (session) {
+  if (status === 'loading') {
+    return (
+      <>
+        <Head>
+          <title>Loading</title>
+        </Head>
+        <Sidebar session={session} />
+        <ContentSkeleton session={session} vsCurrency={vsCurrency} isLoading={true} />
+      </>
+    )
+  }
 
-      async function getUserData() {
+
+  if (!session) {
+    signIn()
+    return (
+      <>
+        <Head>
+          <title>Loading</title>
+        </Head>
+        <Sidebar session={session} />
+        <ContentSkeleton session={session} vsCurrency={vsCurrency} isLoading={true} />
+      </>
+    )
+  }
+
+
+  async function getUserData() {
               
-        let userVal = await fetch('/api/user/get-user')
-          .then(resp => resp.json())
-          .then(async resp => {
-            if (resp === null) {
-              //console.log('erro ao carregar os dados')
-              return null
-            } else {
-              //console.log('had sess req')
-              return resp
-            }
-          })
-          setUserData(userVal)
-          setCryptoStr(Object.keys(userVal).toString())
-          getCryptoData(vsCurrency, Object.keys(userVal).toString())
-      }
-      getUserData()
-    } else {
-      signIn()
-    }
-    
-  }, [])
+    let userVal = await fetch('/api/user/get-user')
+      .then(resp => resp.json())
+      .then(async resp => {
+        if (resp === null) {
+          //console.log('erro ao carregar os dados')
+          return null
+        } else {
+          //console.log('had sess req')
+          return resp
+        }
+      })
+      setUserData(userVal)
+      setCryptoStr(Object.keys(userVal).toString())
+      getCryptoData(vsCurrency, Object.keys(userVal).toString())
+  }
+  if(!cryptoData?.error) getUserData()
 
   if (!cryptoStr || !userData || !cryptoData) return (
     <>
