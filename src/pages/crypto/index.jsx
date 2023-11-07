@@ -39,7 +39,7 @@ const CryptoTable = ({ data, vsCurrency, setShowModal, setModalValues, session, 
       <div className="text-3xl">Erro (provavelmente na API da coingecko)</div>
       <div className="text-xl">{hasError.error}</div>
       <div className="text-xl">{hasError.errMsg.toString()}</div>
-      <div className="text-sm">{hasError.url}</div>
+      <div className="text-sm break-words">{hasError.url}</div>
     </> 
   )
 
