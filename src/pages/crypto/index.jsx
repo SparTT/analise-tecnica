@@ -256,12 +256,13 @@ export default function CryptoDashboard () {
 
             if (data[i].symbol.toUpperCase() === 'USDT') continue
 
-            const str = `"${data[i].symbol.toUpperCase()}USDT"`
+            const str = `"${data[i].symbol.toUpperCase()}USDT",`
             cryptos += str
-
-            if (i !== data.length -1) cryptos += ','
           }
           cryptos += ']'
+          cryptos = cryptos.replace(',]', ']')
+
+          console.log(data.length, data)
 
           const prices = await fetch(`https://api.binance.com/api/v3/ticker/price?symbols=${cryptos.toString()}`)
           .then(resp => resp.json())
