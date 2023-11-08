@@ -100,7 +100,7 @@ const CryptoTable = ({ data, vsCurrency, setShowModal, setModalValues, session, 
         </tr>
       </thead>
       <tbody>
-        { data.map( coin => (
+        {data.map( coin => (
           <tr key={coin.name} className="border-b border-zinc-800 py-3 font-bold">
             <td className="pl-2">
               <span>
@@ -111,7 +111,7 @@ const CryptoTable = ({ data, vsCurrency, setShowModal, setModalValues, session, 
             </td>
             <td className="px-2">
               <span>
-                {coin.user_crypto_qtd} 
+                {coin.qtd} 
               </span>
             </td>
             <td className="px-2">
@@ -121,7 +121,7 @@ const CryptoTable = ({ data, vsCurrency, setShowModal, setModalValues, session, 
             </td>
             <td className="px-2">
               <span className="amount-spent">
-                {formatCurrency(coin.user_spent_amount, 'brl')}
+                {formatCurrency(coin.total_spent, 'brl')}
               </span>
             </td>
             <td className="px-2">
@@ -157,7 +157,7 @@ const CryptoTable = ({ data, vsCurrency, setShowModal, setModalValues, session, 
 const HideBtn = () => <button className="bg-zinc-800 px-3 py-1 rounded-md"><i className={`bi bi-eye text-xl`}></i></button>
  
 
-const ContentSkeleton = ({ session, vsCurrency, isLoading, data, setShowModal, setModalValues, fullUpdate, hasError  }) => {
+const ContentSkeleton = ({ session, vsCurrency, isLoading, userData, setShowModal, setModalValues, fullUpdate, hasError  }) => {
 
   // texto de carregando até add shimmer
 
@@ -186,9 +186,9 @@ const ContentSkeleton = ({ session, vsCurrency, isLoading, data, setShowModal, s
         </div>
         <div className="w-full flex flex-col justify-between gap-6 lg:flex-row">
           <div className="p-5 box-border rounded-lg bg-zinc-900 w-full flex flex-col justify-center lg:w-3/4 lg:p-8 min-h-[416px] max-h-[416px]">
-            <h2 className="text-2xl font-bold mb-5 text-center">{isLoading ? '' : `Total value: ${formatCurrency(data.user_total_amount, vsCurrency)}`}</h2>
+            <h2 className="text-2xl font-bold mb-5 text-center">{isLoading ? '' : `Total value: ${formatCurrency(userData.account_total, vsCurrency)}`}</h2>
             <CryptoTable 
-              data={isLoading ? null : data.cryptos} 
+              data={isLoading ? null : userData.data} 
               vsCurrency={vsCurrency}
               setShowModal={setShowModal}
               setModalValues={setModalValues}
@@ -200,7 +200,7 @@ const ContentSkeleton = ({ session, vsCurrency, isLoading, data, setShowModal, s
           <div className="p-5 box-border rounded-lg bg-zinc-900 w-full overflow-scroll flex flex-col justify-center lg:w-1/4 lg:p-8 lg:overflow-visible min-h-[416px] max-h-[416px]">
             <h2 className="text-2xl font-bold mb-5 text-center">Your portfolio</h2>
             <div className="min-w-[250px] lg:min-w-0">
-              <Donut data={isLoading ? null : data.cryptos} hasError={hasError} />
+              <Donut data={isLoading ? null : userData.data} hasError={hasError} />
             </div>
           </div>
         </div>
@@ -230,37 +230,123 @@ export default function CryptoDashboard () {
 
 
   const [ userData, setUserData ] = useState(null);
-  const [ cryptoData, setCryptoData ] = useState(null);
-  const [ cryptoStr, setCryptoStr ] = useState(null)
   const [showModal, setShowModal] = useState(false);
   const [modalValues, setModalValues] = useState(null)
 
-  // use cryptoData and vsCurrency through useContext/getContext
-  // show modal through useContext
-  //console.log(session)
 
-  async function getCryptoData(vs_currency, cryptoId) {
+  useEffect(() => {
 
-    let url = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=${vs_currency}&ids=${cryptoId}&order=market_cap_desc&per_page=100`
-    url += `&page=1&sparkline=false&price_change_percentage=1h,24h,7d,30d,1y`
-    try {
-      
-      let res = await fetch(url, {
-        headers: {
-          'content-type': 'application/json',
-          'cache-control': 'public, s-maxage=1200, stale-while-revalidate=600',
-        },
-      })
-      .then(resp => resp.json()).catch(e => {
-        return {error: 'deu ruim' , errMsg: e, url: url}
-      })
-      
-      setCryptoData(res)
+    async function getUserData() {
+              
+      let userData = await fetch('/api/user/get-user')
+        .then(resp => resp.json())
+        .then(async resp => {
+          if (resp === null) {
+            //console.log('erro ao carregar os dados')
+            return null
+          } else {
+            //console.log('had sess req')
+            return Object.values(resp)
+          }
+        })
+        
+        .then(async data => {
+          let cryptos = '["USDTBRL",'
+          for (let i = 0; i < data.length; i++) {
 
-    } catch(e) {
-      return {error: 'deu ruim' , errMsg: e}
+            if (data[i].symbol.toUpperCase() === 'USDT') continue
+
+            const str = `"${data[i].symbol.toUpperCase()}USDT"`
+            cryptos += str
+
+            if (i !== data.length -1) cryptos += ','
+          }
+          cryptos += ']'
+
+          const prices = await fetch(`https://api.binance.com/api/v3/ticker/price?symbols=${cryptos.toString()}`)
+          .then(resp => resp.json())
+          .catch(err => console.log(err))
+
+          //console.log(prices, data)
+
+          const conversionPrice = prices.filter(el => el.symbol.includes('USDTBRL'))[0].price
+
+          //console.log(conversionPrice)
+
+          for (let i = 0; i < prices.length; i++) {
+            let cryptoData = prices[i]
+            for(let j = 0; j < data.length; j++) {
+              let userCrypto = data[j]
+              if (cryptoData.symbol === `${userCrypto.symbol.toUpperCase()}USDT`) {
+                userCrypto.current_price = cryptoData.price * conversionPrice
+                userCrypto.user_fiat_amount = userCrypto.current_price * userCrypto.qtd
+                userCrypto.id = userCrypto.name
+              }
+            }
+          }
+
+          return {
+            data: data,
+            cryptos: cryptos,
+            conversionPrice: conversionPrice
+          }
+
+        }).then(async res => {
+          
+          let { data, cryptos, conversionPrice } = res
+          // /api/v3/ticker/24hr
+
+          const dayChange = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbols=${cryptos.toString()}`)
+          .then(resp => resp.json())
+          .catch(err => console.log(err))
+
+
+          for (let i = 0; i < dayChange.length; i++) {
+            let cryptoData = dayChange[i]
+            for(let j = 0; j < data.length; j++) {
+              let userCrypto = data[j]
+              if (cryptoData.symbol === `${userCrypto.symbol.toUpperCase()}USDT`) {
+
+                let priceChange = Number(cryptoData.priceChangePercent)
+                priceChange = Number(priceChange.toFixed(2))
+
+                userCrypto.price_change_percentage_24h_original = cryptoData.priceChangePercent
+                userCrypto.price_change_percentage_24h_in_currency = priceChange //* conversionPrice
+              }
+
+              if (userCrypto.symbol === 'USDT' && !userCrypto.id) {
+                userCrypto.price_change_percentage_24h_original = 0
+                userCrypto.price_change_percentage_24h_in_currency = 0
+                userCrypto.current_price = conversionPrice
+                userCrypto.user_fiat_amount = userCrypto.current_price * userCrypto.qtd
+                userCrypto.id = userCrypto.name
+
+              }
+            }
+
+          }
+
+          
+          let account_total = 0
+          for(let i = 0; i < data.length; i++) {
+            let userCrypto = data[i]
+            account_total += userCrypto.user_fiat_amount
+          }
+
+          return {
+            data: data,
+            account_total: account_total
+          }
+        })
+        
+        setUserData(userData)
+        //setCryptoStr(Object.keys(userData).toString())
+        //getCryptoData(vsCurrency, Object.keys(userVal).toString())
     }
-  }
+    
+    getUserData()
+  }, [])
+ 
 
   if (status === 'loading') {
     return (
@@ -289,26 +375,9 @@ export default function CryptoDashboard () {
   }
 
 
-  async function getUserData() {
-              
-    let userVal = await fetch('/api/user/get-user')
-      .then(resp => resp.json())
-      .then(async resp => {
-        if (resp === null) {
-          //console.log('erro ao carregar os dados')
-          return null
-        } else {
-          //console.log('had sess req')
-          return resp
-        }
-      })
-      setUserData(userVal)
-      setCryptoStr(Object.keys(userVal).toString())
-      getCryptoData(vsCurrency, Object.keys(userVal).toString())
-  }
-  if(!cryptoData?.error) getUserData()
 
-  if (!cryptoStr || !userData || !cryptoData) return (
+  //if (!cryptoStr || !userData || !cryptoData) return (
+  if (!userData) return (
     <>
       <Head>
         <title>Loading</title>
@@ -317,49 +386,7 @@ export default function CryptoDashboard () {
       <ContentSkeleton session={session} vsCurrency={vsCurrency} isLoading={true} />
     </>
   )
-
-  if (cryptoData?.error) return (
-    <>
-    <title>Error :(</title>
-    <Sidebar session={session} />
-    <ContentSkeleton session={session} vsCurrency={vsCurrency} isLoading={true} hasError={cryptoData} />
-  </>
-  )
-
-
-  let data = cryptoData
-   
-  data = prepareMultCrypto(data)
   
-  // faz merge dos dados
-  let account_total = 0
-
-  //console.log(data)
-
-  for (let el of data) {
-    for (let i = 0; i < Object.values(userData).length; i++) {
-      
-      let name = Object.keys(userData)[i]
-      let val = Object.values(userData)[i]
-      
-      if (el.id === name) {
-
-        el.user_crypto_qtd = val.qtd
-        el.user_spent_amount = val.total_spent
-        el.user_fiat_spent = val.currency_spent
-        el.user_fiat_amount = el.current_price * val.qtd
-
-        account_total += el.user_fiat_amount
-
-      }
-
-    }
-  }
-
-  let res = {
-    cryptos: data,
-    user_total_amount: account_total
-  }
 
   //return <ContentSkeleton session={session} vsCurrency={vsCurrency} data={res} />
   
@@ -370,6 +397,7 @@ export default function CryptoDashboard () {
     setShowModal(false)
   }
 
+  console.log(userData)
 
   return (
     <>
@@ -383,7 +411,7 @@ export default function CryptoDashboard () {
       />
       <Sidebar session={session} />
       <ContentSkeleton 
-        session={session} vsCurrency={vsCurrency} data={res} 
+        session={session} vsCurrency={vsCurrency} userData={userData} 
         userId={session.accessToken.id}
         setShowModal={setShowModal} setModalValues={setModalValues}
         fullUpdate={fullUpdate}

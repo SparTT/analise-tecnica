@@ -38,7 +38,7 @@ export default async function handler(req, res) {
 	let data = {
     qtd: body.cryptoAmount,
     total_spent: body.amountSpent,
-		name: body.name,
+	name: body.name,
     currency_spent: 'brl' // dynamic later
   }
 
