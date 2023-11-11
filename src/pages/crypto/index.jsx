@@ -264,49 +264,25 @@ export default function CryptoDashboard () {
 
           console.log(data.length, data)
 
-          const prices = await fetch(`https://api.binance.com/api/v3/ticker/price?symbols=${cryptos.toString()}`)
+          const allPrices = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbols=${cryptos.toString()}`)
           .then(resp => resp.json())
           .catch(err => console.log(err))
 
           //console.log(prices, data)
 
-          const conversionPrice = prices.filter(el => el.symbol.includes('USDTBRL'))[0].price
+          const conversionPrice = Number(allPrices.filter(el => el.symbol.includes('USDTBRL'))[0].lastPrice)
 
           //console.log(conversionPrice)
 
-          for (let i = 0; i < prices.length; i++) {
-            let cryptoData = prices[i]
+          for (let i = 0; i < allPrices.length; i++) {
+            let cryptoData = allPrices[i]
             for(let j = 0; j < data.length; j++) {
               let userCrypto = data[j]
               if (cryptoData.symbol === `${userCrypto.symbol.toUpperCase()}USDT`) {
-                userCrypto.current_price = cryptoData.price * conversionPrice
+                
+                userCrypto.current_price = Number(cryptoData.lastPrice) * conversionPrice
                 userCrypto.user_fiat_amount = userCrypto.current_price * userCrypto.qtd
                 userCrypto.id = userCrypto.name
-              }
-            }
-          }
-
-          return {
-            data: data,
-            cryptos: cryptos,
-            conversionPrice: conversionPrice
-          }
-
-        }).then(async res => {
-          
-          let { data, cryptos, conversionPrice } = res
-          // /api/v3/ticker/24hr
-
-          const dayChange = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbols=${cryptos.toString()}`)
-          .then(resp => resp.json())
-          .catch(err => console.log(err))
-
-
-          for (let i = 0; i < dayChange.length; i++) {
-            let cryptoData = dayChange[i]
-            for(let j = 0; j < data.length; j++) {
-              let userCrypto = data[j]
-              if (cryptoData.symbol === `${userCrypto.symbol.toUpperCase()}USDT`) {
 
                 let priceChange = Number(cryptoData.priceChangePercent)
                 priceChange = Number(priceChange.toFixed(2))
@@ -324,9 +300,7 @@ export default function CryptoDashboard () {
 
               }
             }
-
           }
-
           
           let account_total = 0
           for(let i = 0; i < data.length; i++) {
@@ -338,6 +312,7 @@ export default function CryptoDashboard () {
             data: data,
             account_total: account_total
           }
+
         })
         
         setUserData(userData)
@@ -393,8 +368,8 @@ export default function CryptoDashboard () {
   
   function fullUpdate(resp) {
     setUserData(resp)
-    setCryptoStr(Object.keys(resp).toString())
-    getCryptoData(vsCurrency, Object.keys(resp).toString())
+    //setCryptoStr(Object.keys(resp).toString())
+    //getCryptoData(vsCurrency, Object.keys(resp).toString())
     setShowModal(false)
   }
 
