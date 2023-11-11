@@ -233,93 +233,92 @@ export default function CryptoDashboard () {
   const [showModal, setShowModal] = useState(false);
   const [modalValues, setModalValues] = useState(null)
 
-
-  useEffect(() => {
-
-    async function getUserData() {
+  
+  async function getUserData() {
               
-      let userData = await fetch('/api/user/get-user')
+    let userData = await fetch('/api/user/get-user')
+      .then(resp => resp.json())
+      .then(async resp => {
+        if (resp === null) {
+          //console.log('erro ao carregar os dados')
+          return null
+        } else {
+          //console.log('had sess req')
+          return Object.values(resp)
+        }
+      })
+      
+      .then(async data => {
+        let cryptos = '["USDTBRL",'
+        for (let i = 0; i < data.length; i++) {
+
+          if (data[i].symbol.toUpperCase() === 'USDT') continue
+
+          const str = `"${data[i].symbol.toUpperCase()}USDT",`
+          cryptos += str
+        }
+        cryptos += ']'
+        cryptos = cryptos.replace(',]', ']')
+
+        console.log(data.length, data)
+
+        const allPrices = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbols=${cryptos.toString()}`)
         .then(resp => resp.json())
-        .then(async resp => {
-          if (resp === null) {
-            //console.log('erro ao carregar os dados')
-            return null
-          } else {
-            //console.log('had sess req')
-            return Object.values(resp)
-          }
-        })
-        
-        .then(async data => {
-          let cryptos = '["USDTBRL",'
-          for (let i = 0; i < data.length; i++) {
+        .catch(err => console.log(err))
 
-            if (data[i].symbol.toUpperCase() === 'USDT') continue
+        //console.log(prices, data)
 
-            const str = `"${data[i].symbol.toUpperCase()}USDT",`
-            cryptos += str
-          }
-          cryptos += ']'
-          cryptos = cryptos.replace(',]', ']')
+        const conversionPrice = Number(allPrices.filter(el => el.symbol.includes('USDTBRL'))[0].lastPrice)
 
-          console.log(data.length, data)
+        //console.log(conversionPrice)
 
-          const allPrices = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbols=${cryptos.toString()}`)
-          .then(resp => resp.json())
-          .catch(err => console.log(err))
+        for (let i = 0; i < allPrices.length; i++) {
+          let cryptoData = allPrices[i]
+          for(let j = 0; j < data.length; j++) {
+            let userCrypto = data[j]
+            if (cryptoData.symbol === `${userCrypto.symbol.toUpperCase()}USDT`) {
+              
+              userCrypto.current_price = Number(cryptoData.lastPrice) * conversionPrice
+              userCrypto.user_fiat_amount = userCrypto.current_price * userCrypto.qtd
+              userCrypto.id = userCrypto.name
 
-          //console.log(prices, data)
+              let priceChange = Number(cryptoData.priceChangePercent)
+              priceChange = Number(priceChange.toFixed(2))
 
-          const conversionPrice = Number(allPrices.filter(el => el.symbol.includes('USDTBRL'))[0].lastPrice)
+              userCrypto.price_change_percentage_24h_original = cryptoData.priceChangePercent
+              userCrypto.price_change_percentage_24h_in_currency = priceChange //* conversionPrice
+            }
 
-          //console.log(conversionPrice)
+            if (userCrypto.symbol.toUpperCase() === 'USDT' && !userCrypto.id) {
+              userCrypto.price_change_percentage_24h_original = 0
+              userCrypto.price_change_percentage_24h_in_currency = 0
+              userCrypto.current_price = conversionPrice
+              userCrypto.user_fiat_amount = userCrypto.current_price * userCrypto.qtd
+              userCrypto.id = userCrypto.name
 
-          for (let i = 0; i < allPrices.length; i++) {
-            let cryptoData = allPrices[i]
-            for(let j = 0; j < data.length; j++) {
-              let userCrypto = data[j]
-              if (cryptoData.symbol === `${userCrypto.symbol.toUpperCase()}USDT`) {
-                
-                userCrypto.current_price = Number(cryptoData.lastPrice) * conversionPrice
-                userCrypto.user_fiat_amount = userCrypto.current_price * userCrypto.qtd
-                userCrypto.id = userCrypto.name
-
-                let priceChange = Number(cryptoData.priceChangePercent)
-                priceChange = Number(priceChange.toFixed(2))
-
-                userCrypto.price_change_percentage_24h_original = cryptoData.priceChangePercent
-                userCrypto.price_change_percentage_24h_in_currency = priceChange //* conversionPrice
-              }
-
-              if (userCrypto.symbol === 'USDT' && !userCrypto.id) {
-                userCrypto.price_change_percentage_24h_original = 0
-                userCrypto.price_change_percentage_24h_in_currency = 0
-                userCrypto.current_price = conversionPrice
-                userCrypto.user_fiat_amount = userCrypto.current_price * userCrypto.qtd
-                userCrypto.id = userCrypto.name
-
-              }
             }
           }
-          
-          let account_total = 0
-          for(let i = 0; i < data.length; i++) {
-            let userCrypto = data[i]
-            account_total += userCrypto.user_fiat_amount
-          }
-
-          return {
-            data: data,
-            account_total: account_total
-          }
-
-        })
+        }
         
-        setUserData(userData)
-        //setCryptoStr(Object.keys(userData).toString())
-        //getCryptoData(vsCurrency, Object.keys(userVal).toString())
-    }
-    
+        let account_total = 0
+        for(let i = 0; i < data.length; i++) {
+          let userCrypto = data[i]
+          account_total += userCrypto.user_fiat_amount
+        }
+
+        return {
+          data: data,
+          account_total: account_total
+        }
+
+      })
+      
+      setUserData(userData)
+      //setCryptoStr(Object.keys(userData).toString())
+      //getCryptoData(vsCurrency, Object.keys(userVal).toString())
+  }
+
+  useEffect(() => {
     getUserData()
   }, [])
  
@@ -367,7 +366,7 @@ export default function CryptoDashboard () {
   //return <ContentSkeleton session={session} vsCurrency={vsCurrency} data={res} />
   
   function fullUpdate(resp) {
-    setUserData(resp)
+    getUserData()
     //setCryptoStr(Object.keys(resp).toString())
     //getCryptoData(vsCurrency, Object.keys(resp).toString())
     setShowModal(false)

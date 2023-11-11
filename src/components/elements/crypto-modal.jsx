@@ -28,8 +28,9 @@ export default function Modal({ showModal, setShowModal, isAdd, modalValues, use
 
 		let data = {
 			name: event.target.name.value,
-			amountSpent: event.target['amount-spent'].value,
-			cryptoAmount: event.target['crypto-amount'].value,
+			symbol: event.target.symbol.value,
+			amountSpent: Number(event.target['amount-spent'].value),
+			cryptoAmount: Number(event.target['crypto-amount'].value),
 			userId: userId ? userId : ''
 		}
 
@@ -72,15 +73,19 @@ export default function Modal({ showModal, setShowModal, isAdd, modalValues, use
               {/*content*/}
 							<form method={isAdd ? 'POST' : 'PUT'} action='/api/user/crypto' onSubmit={handleSubmit}>
 								<h1 className="text-xl font-bold text-center my-3">{title}</h1>
+								<Row name={'symbol'} labelText={'Symbol'} placeholder={'Ex: btc'} 
+								required={true} value={modalValues ? modalValues.symbol : ''}
+								disabled={modalValues ? true : false}
+								/>
 								<Row name={'name'} labelText={'Name'} placeholder={'Ex: bitcoin'} 
 								required={true} value={modalValues ? modalValues.id : ''}
 								disabled={modalValues ? true : false}
 								/>
 								<Row name={'amount-spent'} labelText={'Amount spent'} placeholder={'500'}
-								required={true} value={modalValues ? modalValues.user_spent_amount : 0}
+								required={true} value={modalValues ? modalValues.total_spent : 0}
 								/>
 								<Row name={'crypto-amount'} labelText={'Crypto amount'} placeholder={'2.5'}
-								required={true} value={modalValues ? modalValues.user_crypto_qtd : 0}
+								required={true} value={modalValues ? modalValues.qtd : 0}
 								/>
 								<div className="row">
 									<button
