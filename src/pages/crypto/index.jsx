@@ -115,8 +115,8 @@ const CryptoTable = ({ data, vsCurrency, setShowModal, setModalValues, session, 
               </span>
             </td>
             <td className="px-2">
-              <span className={`font-bold ${coin.price_change_percentage_24h_in_currency < 0 ? 'text-rose-600' : 'text-green-600'}`}>
-                {coin.price_change_percentage_24h_in_currency}%
+              <span className={`font-bold ${coin.priceChangePercent < 0 ? 'text-rose-600' : 'text-green-600'}`}>
+                {coin.priceChangePercent}%
               </span>
             </td>
             <td className="px-2">
@@ -126,12 +126,12 @@ const CryptoTable = ({ data, vsCurrency, setShowModal, setModalValues, session, 
             </td>
             <td className="px-2">
               <span className={`font-bold`}>
-                {formatCurrency(coin.current_price, vsCurrency)} 
+                {formatCurrency(coin.values[vsCurrency].current_price, vsCurrency)} 
               </span>
             </td>
             <td className="px-2">
               <span className='total-amount'>
-                { formatCurrency(coin.user_fiat_amount, vsCurrency) } 
+                { formatCurrency(coin.values[vsCurrency].user_fiat_amount, vsCurrency) } 
               </span>
             </td>
             <td className="px-2">
@@ -186,7 +186,7 @@ const ContentSkeleton = ({ session, vsCurrency, isLoading, userData, setShowModa
         </div>
         <div className="w-full flex flex-col justify-between gap-6 lg:flex-row">
           <div className="p-5 box-border rounded-lg bg-zinc-900 w-full flex flex-col justify-center lg:w-3/4 lg:p-8 min-h-[416px] max-h-[416px]">
-            <h2 className="text-2xl font-bold mb-5 text-center">{isLoading ? '' : `Total value: ${formatCurrency(userData.account_total, vsCurrency)}`}</h2>
+            <h2 className="text-2xl font-bold mb-5 text-center">{isLoading ? '' : `Total value: ${formatCurrency(userData.account_total[vsCurrency], vsCurrency)}`}</h2>
             <CryptoTable 
               data={isLoading ? null : userData.data} 
               vsCurrency={vsCurrency}
@@ -277,33 +277,57 @@ export default function CryptoDashboard () {
           for(let j = 0; j < data.length; j++) {
             let userCrypto = data[j]
             if (cryptoData.symbol === `${userCrypto.symbol.toUpperCase()}USDT`) {
-              
-              userCrypto.current_price = Number(cryptoData.lastPrice) * conversionPrice
-              userCrypto.user_fiat_amount = userCrypto.current_price * userCrypto.qtd
-              userCrypto.id = userCrypto.name
 
               let priceChange = Number(cryptoData.priceChangePercent)
               priceChange = Number(priceChange.toFixed(2))
 
+              userCrypto.priceChangePercent = priceChange
+
+              userCrypto.values = {
+                brl: {
+                  current_price: Number(cryptoData.lastPrice) * conversionPrice,
+                  user_fiat_amount : ( Number(cryptoData.lastPrice) * conversionPrice) * userCrypto.qtd
+                },
+                usd: {
+                  current_price: Number(cryptoData.lastPrice),
+                  user_fiat_amount : Number(cryptoData.lastPrice) * userCrypto.qtd
+                }
+              }
+
+              userCrypto.id = userCrypto.name
               userCrypto.price_change_percentage_24h_original = cryptoData.priceChangePercent
-              userCrypto.price_change_percentage_24h_in_currency = priceChange //* conversionPrice
+
             }
 
             if (userCrypto.symbol.toUpperCase() === 'USDT' && !userCrypto.id) {
+
+              userCrypto.priceChangePercent = 0
+
+              userCrypto.values = {
+                brl: {
+                  current_price: conversionPrice,
+                  user_fiat_amount : conversionPrice * userCrypto.qtd,
+                },
+                usd: {
+                  current_price: 1,
+                  user_fiat_amount : 1 * userCrypto.qtd,
+                }
+              }
               userCrypto.price_change_percentage_24h_original = 0
-              userCrypto.price_change_percentage_24h_in_currency = 0
-              userCrypto.current_price = conversionPrice
-              userCrypto.user_fiat_amount = userCrypto.current_price * userCrypto.qtd
               userCrypto.id = userCrypto.name
 
             }
           }
         }
         
-        let account_total = 0
+        let account_total = {
+          brl: 0,
+          usd: 0
+        }
         for(let i = 0; i < data.length; i++) {
           let userCrypto = data[i]
-          account_total += userCrypto.user_fiat_amount
+          account_total['brl'] += userCrypto.values['brl'].user_fiat_amount
+          account_total['usd'] += userCrypto.values['usd'].user_fiat_amount
         }
 
         return {
@@ -312,7 +336,7 @@ export default function CryptoDashboard () {
         }
 
       })
-      
+
       setUserData(userData)
       //setCryptoStr(Object.keys(userData).toString())
       //getCryptoData(vsCurrency, Object.keys(userVal).toString())

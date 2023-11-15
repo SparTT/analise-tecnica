@@ -4,11 +4,15 @@ import { signIn } from "next-auth/react"
 import { Loading } from '../utils/reusable-scripts';
 
 function prepareDonutData(data) {
+  
+  const vsCurrency = 'brl' // temp
+
   let res = []
+
   for(let el of data) {
     let coin = {
       name: el.id,
-      value: el.user_fiat_amount.toFixed(2)
+      value: el.values[vsCurrency].user_fiat_amount.toFixed(2)
     }
     res.push(coin)
   }
