@@ -223,9 +223,6 @@ export default function CryptoDashboard () {
 
   const { data: session, status } = useSession()
 
-  
-  //let vsFiat = getCookie(cookieHeader, 'vsCurrency', 'brl')
-
   const [ vsCurrency, setVsCurrency ] = useState('brl')
 
 
