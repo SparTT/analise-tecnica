@@ -81,11 +81,11 @@ export default function Modal({ showModal, setShowModal, isAdd, modalValues, use
 								required={true} value={modalValues ? modalValues.id : ''}
 								disabled={modalValues ? true : false}
 								/>
-								<Row name={'amount-spent'} labelText={'Amount spent'} placeholder={'500'}
-								required={true} value={modalValues ? modalValues.total_spent : 0}
+								<Row name={'amount-spent'} labelText={'Amount spent'} placeholder={'500'} inputType={'number'}
+								required={true} value={modalValues ? modalValues.total_spent : 0} step={'any'}
 								/>
-								<Row name={'crypto-amount'} labelText={'Crypto amount'} placeholder={'2.5'}
-								required={true} value={modalValues ? modalValues.qtd : 0}
+								<Row name={'crypto-amount'} labelText={'Crypto amount'} placeholder={'2.5'} inputType={'number'}
+								required={true} value={modalValues ? modalValues.qtd : 0} step={'any'}
 								/>
 								<div className="row">
 									<button

@@ -21,7 +21,7 @@ export default async function handler(req, res) {
 	const db = client.db(dbName);
 	const col = db.collection("data");
 
-	const name = body.name
+	const name = body.name.toLowerCase()
 
 	/*
 	let findCrypto = await fetch(`${req.headers.origin}/api/crypto/get-crypto?id=${name}`).then(resp => resp.json())
